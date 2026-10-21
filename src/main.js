@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 import { createScene } from './scene.js';
 import { getPlanets, getPlanet, simulate } from './api.js';
+import { createPlanetSurface } from './planetScene.js';
 
 const { scene, camera, renderer, controls } = createScene();
 const bodies = new Map(); // slug -> { mesh, dist, angle }
-
+let mode = 'orbit'; // 'orbit' | 'surface'
+let surfaceScene = null;
 const listEl = document.getElementById('planetList');
 const infoPanel = document.getElementById('infoPanel');
 const simModal = document.getElementById('simModal');
@@ -87,7 +89,34 @@ async function focusPlanet(slug) {
     pill.textContent = `⚠ REQUIRES EQUIPMENT — death in ~${surv.unprotectedDeathSeconds}s`;
   }
 
-  document.getElementById('simBtn').onclick = () => openSim(slug);
+    document.getElementById('simBtn').textContent = 'Explore Surface';
+    document.getElementById('simBtn').onclick = () => landOnPlanet(slug);
+}
+
+async function landOnPlanet(slug) {
+  const data = await getPlanet(slug);
+  if (!data.landable) {
+    alert(`${data.name} has no surface — cannot land.`);
+    return;
+  }
+  surfaceScene = createPlanetSurface(renderer, data);
+  mode = 'surface';
+  document.getElementById('rail').style.opacity = '0.3';
+  document.getElementById('rail').style.pointerEvents = 'none';
+  const exit = document.createElement('button');
+  exit.id = 'exitSurface';
+  exit.textContent = '← Return to Orbit';
+  exit.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:30;padding:10px 16px;' +
+    'background:rgba(10,14,28,0.72);border:1px solid rgba(120,160,255,0.14);' +
+    'backdrop-filter:blur(18px);border-radius:8px;color:#E8EDFF;font-family:Inter;cursor:pointer;';
+  exit.onclick = () => {
+    mode = 'orbit';
+    surfaceScene = null;
+    document.getElementById('rail').style.opacity = '1';
+    document.getElementById('rail').style.pointerEvents = 'auto';
+    exit.remove();
+  };
+  document.body.appendChild(exit);
 }
 
 function openSim(slug) {
