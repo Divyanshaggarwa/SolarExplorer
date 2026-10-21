@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solar System Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/styles.css" />
+</head>
+<body>
+  <canvas id="scene"></canvas>
+
+  <aside id="rail">
+    <h1 class="brand">SOLAR SYSTEM</h1>
+    <div id="planetList" class="list"></div>
+  </aside>
+
+  <section id="infoPanel" class="panel hidden">
+    <button id="backBtn" class="ghost-btn">← Back to System</button>
+    <h2 id="pName"></h2>
+    <span id="pType" class="badge"></span>
+    <div id="stats" class="stats"></div>
+    <div id="survival" class="survival-pill"></div>
+    <button id="simBtn" class="primary-btn">Open Survival Simulator</button>
+  </section>
+
+  <div id="simModal" class="modal hidden">
+    <div class="modal-card">
+      <h3>Survival Simulator</h3>
+      <label><input type="checkbox" id="eqPressure"> Pressure Suit (1 atm)</label>
+      <label><input type="checkbox" id="eqOxygen"> Oxygen Supply</label>
+      <label><input type="checkbox" id="eqTemp"> Thermal Control</label>
+      <label><input type="checkbox" id="eqRad"> Radiation Shielding</label>
+      <label>Desired temp (°C): <input type="number" id="eqTempVal" value="20"></label>
+      <label>Radiation dose (mSv/yr): <input type="number" id="eqRadVal" value="40"></label>
+      <div id="simResult" class="sim-result"></div>
+      <button id="simClose" class="ghost-btn">Close</button>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

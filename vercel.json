@@ -1,0 +1,9 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/api/planets", "destination": "/api/planets.js" },
+    { "source": "/api/planets/simulate", "destination": "/api/simulate.js" },
+    { "source": "/api/planets/:slug", "destination": "/api/planets/[slug].js" }
+  ]
+}
