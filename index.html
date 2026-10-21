@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Astrovoyage – Walk on Other Worlds</title>
+<title>Astrovoyage – Could you survive on another world?</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#04060b;--glass:rgba(12,16,26,.72);--line:rgba(190,210,255,.14);--txt:#eaf0ff;--mut:#8c98b8;--acc:#ffb347;--cy:#62e3ff;--bad:#ff5d62;--ok:#4ade80}
@@ -37,7 +37,7 @@ h4{margin:16px 0 8px;font-size:14px}ul{margin:0;padding-left:18px}li{margin-bott
 .meter{display:flex;gap:5px;margin:4px 0 12px}.meter i{flex:1;height:8px;border-radius:9px;background:rgba(255,255,255,.12)}.meter i.f{background:var(--ok)}
 .btn{margin-top:14px;width:100%;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--acc);color:#1a1000;font:700 15px 'Space Grotesk';cursor:pointer}
 .btn:hover,.btn:focus-visible{filter:brightness(1.1);outline:none}
-#hud{position:fixed;left:24px;top:68px;z-index:6;padding:16px 18px;width:250px;display:none}
+#hud{position:fixed;left:24px;top:68px;z-index:6;padding:16px 18px;width:290px;display:none}
 #hud h3{margin:0 0 8px;font:700 18px 'Space Grotesk'}#hud div{display:flex;justify-content:space-between;padding:3px 0;color:var(--mut)}#hud div b{color:var(--txt);font-size:13px}
 #vit{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);z-index:6;width:420px;padding:14px 18px;display:none;text-align:center}
 .bar{height:8px;border-radius:9px;background:rgba(255,255,255,.12);overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--ok);width:100%}
@@ -50,85 +50,90 @@ h4{margin:16px 0 8px;font-size:14px}ul{margin:0;padding-left:18px}li{margin-bott
 #small{display:none;position:fixed;inset:0;z-index:30;background:var(--bg);align-items:center;justify-content:center;text-align:center;padding:30px}
 @media(max-width:1000px){#small{display:flex}}
 @media(prefers-reduced-motion:reduce){#panel,#fade{transition:none}}
+.fn{font-size:12px;color:var(--mut);margin:10px 0 0}
+.gi{display:flex;gap:10px;align-items:center;padding:9px 11px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;cursor:pointer}.gi:hover{border-color:var(--cy)}.gi span{flex:1}.gi em{color:var(--mut);font-style:normal;font-size:12px}
+.ln{padding:7px 0;border-bottom:1px solid var(--line)}.ln.ok::before{content:'✓  ';color:var(--ok);font-weight:700}.ln.no::before{content:'✗  ';color:var(--bad);font-weight:700}
+.tabs button{font-size:12px!important}
+#intro{position:fixed;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%,rgba(28,38,70,.88),rgba(4,6,11,.97))}
+#intro .glass{max-width:640px;padding:40px;background:rgba(12,16,26,.85)}#intro h1{font-size:46px;line-height:1;margin:0 0 10px;letter-spacing:-.02em}#intro h1 span{color:var(--acc)}
+#intro ol{padding-left:20px;margin:16px 0 22px}#intro li{margin-bottom:10px}#intro .btn{width:auto;padding:14px 30px;margin:0}
 </style></head><body>
 <canvas id="c"></canvas>
 <div id="brand">Astro<span>voyage</span></div>
 <nav id="rail" class="glass" aria-label="Planets"></nav>
-<div id="tools"><button class="pill on" id="tOrb">Orbit lines</button><button class="pill" id="tPause">Pause orbits</button><button class="pill" id="back" style="display:none">All planets</button></div>
-<div id="hint" class="glass">Drag to rotate · scroll to zoom · click a planet to fly there</div>
+<div id="tools"><button class="pill on" id="tOrb">Orbit lines</button><button class="pill" id="tPause">Pause orbits</button><button class="pill" id="help">How it works</button><button class="pill" id="back" style="display:none">All planets</button></div>
+<div id="hint" class="glass">Loading planetary data from database...</div>
 <aside id="panel" class="glass"></aside>
 <aside id="hud" class="glass"></aside>
 <div id="vit" class="glass"></div>
 <div id="vig"></div><div id="visor"></div><div id="fade"></div>
 <div id="dead"><div><h2>Consciousness lost</h2><p id="dm"></p><button class="pill" id="rs">Put suit back on and respawn</button></div></div>
+<div id="intro" style="display:none"><div class="glass"><h1>Astro<span>voyage</span></h1><p>Fly across the solar system, land on a planet and find out whether a human could survive there.</p><ol><li><b>Click a planet.</b> See its temperature, gravity, atmosphere, water, radiation, what you would see, and whether life could exist.</li><li><b>Land and walk.</b> Use W A S D, Shift and Space. Then remove your protection to feel how fast the environment kills you.</li><li><b>Take the Mission tab.</b> Pack the right equipment within the weight limit and try to survive.</li></ol><button class="btn" id="startb">Start exploring</button><p class="fn">Best on desktop Chrome. Scientific values are pulled directly from the mission database.</p></div></div>
 <div id="small"><h2 class="d">Please open this on a desktop screen</h2></div>
 
 <script>window.onerror=function(m,u,l){var d=document.createElement('div');d.style.cssText='position:fixed;left:260px;right:20px;top:70px;z-index:99;background:#400;color:#fff;padding:12px;border-radius:10px;font:13px monospace';d.textContent='Error: '+m+' (line '+l+'). If three.js failed to load, check your internet connection.';document.body.appendChild(d)};</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ============ PLANET DATA — replace/extend with your database values ============
- n name · r size · d orbit distance · s orbit speed · c 3 texture colours · ty texture type
- t temp · p pressure · a atmosphere · gr gravity · w water · rad radiation
- tt seconds you survive with NO equipment (null = safe) · v why · eq equipment list · gt survival time with equipment
- see: what you’d see · life: [0-5 score, label, text] · atm: glow colour
- env: surface-world settings (sky top/horizon, ground colours, terrain height, fog, sun size, g in Earth gravities) */
+/* ============ PLANET DATA (Defaults / Visuals) ============ */
 const P=[
-{n:'Mercury',r:.9,d:16,s:.9,c:['#4a4540','#8c857b','#b9b1a5'],ty:'rock',atm:null,tag:'A scorched, airless rock with the biggest temperature swings in the solar system.',
- t:'−180 °C to 430 °C',p:'≈ 0 Pa (vacuum)',a:'Almost none',gr:'0.38 g',w:'Ice hidden in polar craters',rad:'Extreme, no shielding',tt:15,
- v:'There is no air. In a vacuum you lose consciousness in about 15 seconds, and sunlit ground is hot enough to melt lead.',
- eq:['Pressurised suit with oxygen supply','Active cooling in daylight, heaters at night','Heavy radiation and solar-flare shielding','Work in the polar craters or the twilight belt'],gt:'Hours in a suit; months in a shielded polar base',
- see:'A black sky with hard stars, even at noon. The Sun looks nearly three times larger than from Earth. Shadows are razor sharp, and the ground is cratered grey rock with a long, glaring horizon.',
- life:[1,'Extremely unlikely','No atmosphere, no stable liquid water and brutal radiation. Only a faint chance of ice-protected chemistry in permanently shadowed craters.'],
- env:{top:'#000',hor:'#000',g1:'#5e5851',g2:'#9a9288',amp:14,fd:0,sun:2.6,si:2.8,stars:1,g:.38}},
-{n:'Venus',r:1.7,d:23,s:.7,c:['#8a5a22','#cf9a48','#efd08c'],ty:'band',atm:'#ffb55a',tag:'Hot enough to melt lead, under 92 times Earth’s air pressure.',
- t:'465 °C, day and night',p:'9,200,000 Pa (92 atm)',a:'96% CO₂, sulfuric acid clouds',gr:'0.90 g',w:'None at the surface',rad:'Low, the thick air shields you',tt:3,
- v:'The pressure of 900 m of ocean and 465 °C would crush and cook an unprotected human almost instantly.',
- eq:['Pressure hull of titanium, like a deep-sea submersible','Powerful active cooling system','Acid-resistant outer coating','Alternative: a floating base at 50 km altitude where air is Earth-like pressure'],gt:'Minutes to hours on the surface; indefinitely in a cloud-level aerostat',
- see:'A dim orange twilight under a thick yellow-brown haze. The Sun is never visible. The ground is flat volcanic plains, and lightning may flash in the clouds above.',
- life:[2,'Unlikely on the ground, debated in the clouds','The surface is sterile, but the cloud layer at 50 km has mild temperatures. Scientists still debate possible microbes there.'],
- env:{top:'#a0601c',hor:'#d89a4a',g1:'#6e4318',g2:'#b27a38',amp:10,fd:.0065,sun:0,si:.6,dust:1,dc:'#e8b46c',flash:1,g:.9}},
-{n:'Earth',r:1.8,d:31,s:.55,c:['#0b2f6e','#2f7a3a','#8a7242'],ty:'earth',atm:'#5aa5ff',tag:'Home. The only world known to host life.',
- t:'15 °C average',p:'101,325 Pa',a:'78% N₂, 21% O₂',gr:'1.00 g',w:'Abundant: 71% of the surface',rad:'Low, shielded by magnetic field',tt:null,
- v:'Breathable air, liquid water and a comfortable temperature. No equipment is needed.',
- eq:['Nothing special for survival','Clothing and shelter for extreme climates'],gt:'A full lifetime',
- see:'A blue sky, white clouds, green land, oceans and a warm yellow Sun. Familiar gravity under your feet.',
- life:[5,'Life exists here','Home to millions of species across every environment from deep oceans to mountain tops.'],
- env:{top:'#3b7ed6',hor:'#bcd9f2',g1:'#3c6b33',g2:'#7b6b46',amp:34,fd:.0012,sun:1,si:2.2,ocean:1,trees:1,g:1}},
-{n:'Mars',r:1.2,d:40,s:.45,c:['#5a2610','#b5502a','#e0a272'],ty:'rock',atm:'#e08a5a',tag:'A cold desert with ancient riverbeds and polar ice.',
- t:'−62 °C average (−125 to 20 °C)',p:'610 Pa (0.6% of Earth)',a:'95% CO₂, 2.6% N₂, 0.13% O₂',gr:'0.38 g',w:'Polar ice, subsurface permafrost',rad:'0.67 mSv per day (SPE alerts)',tt:15,
- v:'Pressure is below the Armstrong limit, so body fluids boil. You lose consciousness in about 15 seconds. Air is almost pure CO₂.',
- eq:['Pressurised suit with oxygen supply','Heating for −62 °C average','Radiation shelter or regolith cover','Dust filtration and sealed habitat'],gt:'Hours in a suit; years in a sealed, shielded habitat',
- see:'A butterscotch sky that turns blue at sunset. The Sun is small and pale. Red-orange dust, boulders, dunes and distant cliffs, with gentle gravity that lets you leap high.',
- life:[3,'Possible, in the past or underground','Ancient Mars had rivers and lakes. Microbes could survive in subsurface brine or ice today. Not confirmed.'],
- env:{top:'#a8694a',hor:'#e0a07a',g1:'#8a4325',g2:'#c27a4a',amp:18,fd:.0032,sun:.65,si:1.5,dust:1,dc:'#d9a07a',wind:[7,0,2],g:.38}},
-{n:'Jupiter',r:5,d:62,s:.25,c:['#7a5030','#c9a27a','#f0e2c8'],ty:'band',atm:'#e8c89a',tag:'A gas giant with no ground and storms wider than Earth.',
- t:'−110 °C at cloud tops',p:'100,000 Pa at cloud tops, rising without limit',a:'90% H₂, 10% He',gr:'2.53 g',w:'Water clouds deeper inside',rad:'Lethal radiation belts',tt:12,
- v:'No solid surface, no oxygen and deadly radiation. You would be torn by winds while falling into crushing pressure.',
- eq:['A floating balloon habitat at the cloud tops','Sealed oxygen supply and heating','Extreme radiation shielding (the strongest in the solar system)','No known equipment survives below the cloud tops'],gt:'Hours at most, in a shielded aerostat',
- see:'Endless cream and brown cloud decks, giant storms and flashes of lightning. No ground exists, and the sky glows orange-tan.',
- life:[1,'Very unlikely','No surface, extreme pressure and radiation. Some scientists have speculated about floating microbes in the water clouds.'],
- env:{top:'#79502f',hor:'#d7b48a',g1:'#e0cdac',g2:'#b08558',amp:1.6,fd:.011,sun:.2,si:1,deck:1,dust:1,dc:'#f2e0c4',flash:1,wind:[14,0,3],g:2.53}},
-{n:'Saturn',r:4.3,d:82,s:.2,c:['#a89060','#d8c08a','#f2e5bd'],ty:'band',atm:'#f0dcaa',tag:'Famous for its rings, a gas giant lighter than water.',
- t:'−140 °C at cloud tops',p:'100,000 Pa at cloud tops, rising without limit',a:'96% H₂, 3% He',gr:'1.07 g',w:'Ring ice and frozen moons',rad:'Moderate belts',tt:12,
- v:'No ground, no oxygen and winds above 1,800 km/h. Unprotected, you lose consciousness within seconds.',
- eq:['A floating aerostat at a milder cloud depth','Sealed oxygen supply and heating','Reinforced hull against 1,800 km/h winds'],gt:'Hours to days in an aerostat',
- see:'Pale golden cloud bands under a hazy sky. The Sun is a tiny bright star. The ring arc is visible only from certain latitudes.',
- life:[1,'Very unlikely','The planet itself is hostile. Its moon Enceladus has a hidden ocean, which is a much better place to look.'],
- env:{top:'#9a8250',hor:'#e6d3a3',g1:'#ecdcb0',g2:'#c5ad7a',amp:1.5,fd:.01,sun:.1,si:.9,deck:1,dust:1,dc:'#f4e8c8',wind:[16,0,2],g:1.07}},
-{n:'Uranus',r:2.8,d:100,s:.14,c:['#4fa5b0','#7ad9e0','#c4f4f4'],ty:'band',atm:'#8be8ee',tag:'An ice giant that spins on its side.',
- t:'−195 °C',p:'100,000 Pa at cloud tops, rising without limit',a:'83% H₂, 15% He, 2% CH₄',gr:'0.89 g',w:'Icy water-ammonia interior',rad:'Low',tt:10,
- v:'It is colder than liquid air and there is nothing to breathe. You freeze and suffocate within seconds.',
- eq:['Aerostat habitat with strong heating','Sealed oxygen and insulation for −195 °C'],gt:'Hours in an aerostat',
- see:'A calm, cyan-blue haze and almost no visible features. The Sun looks like a bright star, and the sky is strangely uniform.',
- life:[1,'Very unlikely','Frozen, dark and chemically harsh. No known environment suitable for life.'],
- env:{top:'#3f8f9a',hor:'#9fe0e6',g1:'#c0f0f2',g2:'#80cad2',amp:1.4,fd:.012,sun:.05,si:.8,deck:1,dust:1,dc:'#d8f6f8',wind:[10,0,2],g:.89}},
-{n:'Neptune',r:2.7,d:116,s:.11,c:['#1a3396','#3d63e0','#8fb0ff'],ty:'band',atm:'#6c92ff',tag:'The windiest world, with storms near 2,000 km/h.',
- t:'−200 °C',p:'100,000 Pa at cloud tops, rising without limit',a:'80% H₂, 19% He, 1% CH₄',gr:'1.14 g',w:'Icy water-ammonia interior',rad:'Low',tt:10,
- v:'Deep cold, supersonic winds and no oxygen mean you survive only seconds unprotected.',
- eq:['Heavily reinforced aerostat','Heating and sealed oxygen','Hull rated for supersonic winds'],gt:'Hours in an aerostat',
- see:'Deep blue skies streaked with bright white methane clouds, with a faint Sun and fast-moving storms.',
- life:[1,'Very unlikely','Extreme cold and winds with no stable surface. Its moon Triton is the more interesting target.'],
- env:{top:'#1b3a9a',hor:'#5f86e8',g1:'#7898f0',g2:'#3d5fd0',amp:1.4,fd:.012,sun:.04,si:.8,deck:1,dust:1,dc:'#c8d8ff',wind:[18,0,2],g:1.14}}];
+{n:'Mercury',r:.9,d:16,s:.9,c:['#4a4540','#8c857b','#b9b1a5'],ty:'rock',atm:null,tag:'The extreme-temperature world: a grey, cratered rock under a black sky.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:15,v:'',eq:['Pressurised living space and oxygen supply','Carbon-dioxide removal and thermal regulation','Radiation protection and dependable power'],gt:'Theoretically possible in an advanced sealed habitat.',see:'A grey, rocky landscape covered in craters. The sky is black even in daytime.',life:[1,'No life detected','Mercury’s exposed surface is extremely hostile to known life.'],ch:{t:'Beat the Temperature Extremes',m:'Explore a cratered region and return to a protected habitat.',h:'Vacuum, solar radiation and extreme temperature differences.',w:'You collected a scientific sample and returned with every critical system working.'},need:['suit','therm','rad','power'],opts:['suit','therm','rad','power','water','comms'],env:{top:'#000',hor:'#000',g1:'#5e5851',g2:'#9a9288',amp:14,fd:0,sun:2.6,si:2.8,stars:1,cr:70,g:.38}},
+{n:'Venus',r:1.7,d:23,s:.7,c:['#8a5a22','#cf9a48','#efd08c'],ty:'band',atm:'#ffb55a',tag:'The crushing-pressure world, hidden under thick clouds.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:3,v:'',eq:['Exceptionally heat- and pressure-resistant habitat','Advanced cooling and a complete life-support system'],gt:'Surface survival needs extreme engineering.',see:'A rocky landscape under a hazy, orange-tinted sky with heavily filtered sunlight.',life:[2,'No life confirmed','The surface is extremely hostile to known life.'],ch:{t:'Survive the Venusian Environment',m:'Investigate Venus and collect atmospheric data.',h:'Extreme surface heat, crushing pressure and corrosive cloud chemistry.',w:'You completed the data-collection mission.'},need:['hull','therm','power','comms'],opts:['hull','therm','power','comms','suit','food'],env:{top:'#a0601c',hor:'#d89a4a',g1:'#6e4318',g2:'#b27a38',amp:10,fd:.0065,sun:0,si:.6,dust:1,dc:'#e8b46c',flash:1,g:.9}},
+{n:'Earth',r:1.8,d:31,s:.55,c:['#0b2f6e','#2f7a3a','#8a7242'],ty:'earth',atm:'#5aa5ff',tag:'The life-supporting world.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:null,v:'',eq:['Safe food and drinkable water','Shelter and suitable clothing'],gt:'A full lifetime, given safe food, water and shelter.',see:'Blue skies, white clouds, oceans, mountains, forests, deserts.',life:[5,'Life exists here','Life is found throughout Earth.'],ch:{t:'Find a Safe Environment',m:'Reach a safe location during a simulated environmental emergency.',h:'Severe weather, cold, heat or a shortage of drinkable water.',w:'You reached safety and completed the survival checklist.'},need:['shelter','water','food','warm'],opts:['shelter','water','food','warm','comms','suit'],env:{top:'#3b7ed6',hor:'#bcd9f2',g1:'#3c6b33',g2:'#7b6b46',amp:34,fd:.0012,sun:1,si:2.2,ocean:1,trees:1,clouds:'rgba(255,255,255,.5)',g:1}},
+{n:'Mars',r:1.2,d:40,s:.45,c:['#5a2610','#b5502a','#e0a272'],ty:'rock',atm:'#e08a5a',tag:'The human-exploration challenge: a cold, dusty desert.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:15,v:'',eq:['Pressurised habitat and oxygen supply','Carbon-dioxide removal and thermal control','Radiation shielding','Water extraction or recycling, and food supplies'],gt:'Potentially possible inside a properly engineered habitat.',see:'A rusty red, dusty landscape with craters, rocks, valleys and enormous volcanoes.',life:[3,'Unresolved','Ancient Mars had rivers, lakes and environments that may have suited microbes.'],ch:{t:'The 24-Hour Mars Expedition',m:'Explore a Martian crater, secure a water resource and return to the habitat.',h:'Low pressure, no breathable air, cold, radiation and limited resources.',w:'You completed the expedition, secured the sample and returned.'},need:['suit','therm','rad','power','water','shelter'],opts:['suit','therm','rad','power','water','shelter','comms','food'],env:{top:'#a8694a',hor:'#e0a07a',g1:'#8a4325',g2:'#c27a4a',amp:18,fd:.0032,sun:.65,si:1.5,dust:1,dc:'#d9a07a',wind:[7,0,2],cr:30,clouds:'rgba(235,190,150,.22)',g:.38}},
+{n:'Jupiter',r:5,d:62,s:.25,c:['#7a5030','#c9a27a','#f0e2c8'],ty:'band',atm:'#e8c89a',tag:'The giant planet without solid ground.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:12,v:'',eq:['Floating atmospheric habitat','Buoyancy, life support and reliable power'],gt:'Only speculative.',see:'Broad cream, brown, white and orange cloud bands and enormous storms.',life:[1,'No life detected','Any hypothetical floating organisms would face major challenges.'],ch:{t:'The Atmospheric Descent Mission',m:'Collect atmospheric measurements.',h:'Intense radiation, rising pressure, increasing temperature and storms.',w:'You collected and transmitted the data.'},need:['hull','rad','power','comms'],opts:['hull','rad','power','comms','suit','float'],env:{top:'#79502f',hor:'#d7b48a',g1:'#e0cdac',g2:'#b08558',amp:1.6,fd:.011,sun:.2,si:1,deck:1,dust:1,dc:'#f2e0c4',flash:1,wind:[14,0,3],g:2.36}},
+{n:'Saturn',r:4.3,d:82,s:.2,c:['#a89060','#d8c08a','#f2e5bd'],ty:'band',atm:'#f0dcaa',tag:'The ringed giant.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:12,v:'',eq:['A floating aerostat','Sealed oxygen supply and heating'],gt:'Hypothetical: hours to days in an aerostat.',see:'Pale golden cloud bands under a hazy sky.',life:[1,'No life detected','The planet itself is hostile.'],ch:{t:'Float in the Golden Clouds',m:'Hold position in a floating platform.',h:'Fierce winds, extreme cold and no oxygen.',w:'You kept the platform stable.'},need:['float','therm','power','comms'],opts:['float','therm','power','comms','suit','water'],env:{top:'#9a8250',hor:'#e6d3a3',g1:'#ecdcb0',g2:'#c5ad7a',amp:1.5,fd:.01,sun:.1,si:.9,deck:1,dust:1,dc:'#f4e8c8',wind:[16,0,2],g:1.07}},
+{n:'Uranus',r:2.8,d:100,s:.14,c:['#4fa5b0','#7ad9e0','#c4f4f4'],ty:'band',atm:'#8be8ee',tag:'An ice giant that spins on its side.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:10,v:'',eq:['Aerostat habitat with strong heating'],gt:'Hypothetical: hours in an aerostat.',see:'A calm cyan-blue haze with almost no visible features.',life:[1,'No life detected','Frozen, dark and chemically harsh.'],ch:{t:'Survive the Ice Giant',m:'Hold a platform in the cold clouds.',h:'Extreme cold and no oxygen.',w:'You kept the platform warm.'},need:['float','therm','power','comms'],opts:['float','therm','power','comms','suit','water'],env:{top:'#3f8f9a',hor:'#9fe0e6',g1:'#c0f0f2',g2:'#80cad2',amp:1.4,fd:.012,sun:.05,si:.8,deck:1,dust:1,dc:'#d8f6f8',wind:[10,0,2],g:.89}},
+{n:'Neptune',r:2.7,d:116,s:.11,c:['#1a3396','#3d63e0','#8fb0ff'],ty:'band',atm:'#6c92ff',tag:'The windiest world.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:10,v:'',eq:['Heavily reinforced aerostat'],gt:'Hypothetical: hours in an aerostat.',see:'Deep blue skies streaked with bright white methane clouds.',life:[1,'No life detected','Extreme cold and winds with no stable surface.'],ch:{t:'Ride the Fastest Winds',m:'Keep a platform aloft and gather data.',h:'Supersonic winds, extreme cold.',w:'You kept the platform aloft.'},need:['float','therm','power','comms'],opts:['float','therm','power','comms','suit','water'],env:{top:'#1b3a9a',hor:'#5f86e8',g1:'#7898f0',g2:'#3d5fd0',amp:1.4,fd:.012,sun:.04,si:.8,deck:1,dust:1,dc:'#c8d8ff',wind:[18,0,2],g:1.14}}];
+
+const G={suit:{l:'Pressurised suit + oxygen',w:15,f:'You had no sealed pressurised suit and oxygen supply.'},therm:{l:'Thermal control',w:12,f:'Thermal control was missing.'},rad:{l:'Radiation shielding',w:14,f:'Radiation shielding was inadequate.'},power:{l:'Reliable power + backups',w:18,f:'Power failed.'},water:{l:'Water extraction',w:10,f:'Water reserves ran out.'},hull:{l:'Pressure- and heat-resistant hull',w:25,f:'The hull was crushed.'},float:{l:'Buoyant atmospheric platform',w:22,f:'The craft sank.'},comms:{l:'Communications relay',w:6,f:'Communications were lost.'},shelter:{l:'Sealed habitat',w:20,f:'There was no shelter.'},food:{l:'Food supply',w:8,f:'Food supplies ran out.'},warm:{l:'Warm weather clothing',w:4,f:'Exposure to the cold caused hypothermia.'}};
+
+/* ============ SUPABASE INTEGRATION ============ */
+// Initialize Supabase
+const supabaseUrl = 'https://wfbkaimlerlrjdchdzt.supabase.co';
+// ⚠️ IMPORTANT: PASTE YOUR FULL ANON KEY BELOW. DO NOT USE THE TRUNCATED ONE.
+const supabaseKey = 'YOUR_SUPABASE_ANON_KEY_HERE'; 
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+async function loadPlanetData() {
+  const { data, error } = await supabase.from('bodies').select('*');
+  if (error) {
+    console.error("Supabase error:", error);
+    document.getElementById('hint').textContent = "Failed to load data from database.";
+    return;
+  }
+
+  data.forEach(dbPlanet => {
+    // Find the matching visual template in the P array
+    const uiPlanet = P.find(p => p.n === dbPlanet.name);
+    if (uiPlanet) {
+      // Overwrite stats with exact Supabase data
+      if (dbPlanet.avg_temp_c !== null) uiPlanet.t = `${dbPlanet.avg_temp_c} °C`;
+      if (dbPlanet.pressure_atm !== null) uiPlanet.p = `${dbPlanet.pressure_atm} atm`;
+      if (dbPlanet.atmosphere) uiPlanet.a = dbPlanet.atmosphere;
+      if (dbPlanet.gravity_ms2 !== null) uiPlanet.gr = `${dbPlanet.gravity_ms2} m/s²`;
+      if (dbPlanet.water) uiPlanet.w = dbPlanet.water;
+      if (dbPlanet.radiation_msv !== null) uiPlanet.rad = `${dbPlanet.radiation_msv} mSv/yr`;
+      
+      // Survival simulation data
+      if (dbPlanet.survival_json) {
+        if (dbPlanet.survival_json.unprotectedDeathSeconds !== undefined) {
+          uiPlanet.tt = dbPlanet.survival_json.unprotectedDeathSeconds;
+        }
+        if (dbPlanet.survival_json.causeOfDeath) {
+          uiPlanet.v = dbPlanet.survival_json.causeOfDeath;
+        }
+      }
+    }
+  });
+
+  // Hide intro, update hint, and start the 3D scene
+  document.getElementById('hint').textContent = "Drag to rotate · scroll to zoom · click a planet to fly there";
+  document.getElementById('intro').style.display = 'flex';
+  document.getElementById('startb').onclick = () => document.getElementById('intro').style.display = 'none';
+  
+  initApp();
+}
 
 /* ============ NOISE + TEXTURES ============ */
 function h2(x,y){const s=Math.sin(x*127.1+y*311.7)*43758.5453;return s-Math.floor(s)}
@@ -146,115 +151,130 @@ function glow(col,sz){const k=document.createElement('canvas');k.width=k.height=
  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(k),blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,fog:false}));s.scale.set(sz,sz,1);return s}
 function atmo(r,col){return new THREE.Mesh(new THREE.SphereGeometry(r*1.13,48,48),new THREE.ShaderMaterial({uniforms:{c:{value:new THREE.Color(col)}},vertexShader:'varying vec3 n;void main(){n=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'varying vec3 n;uniform vec3 c;void main(){float i=pow(max(.0,.74-dot(n,vec3(0.,0.,1.))),3.);gl_FragColor=vec4(c*i*1.8,i);}',side:THREE.BackSide,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false}))}
 
-/* ============ SOLAR SYSTEM SCENE ============ */
-const cv=document.getElementById('c'),R=new THREE.WebGLRenderer({canvas:cv,antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,2));
-const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(55,1,.1,4000);
-const amb=new THREE.AmbientLight(0x6070aa,.32),sunL=new THREE.PointLight(0xfff2d8,2.4,0,1.1);scene.add(amb,sunL);
-const sys=new THREE.Group(),surf=new THREE.Group();scene.add(sys,surf);surf.visible=false;
-const sun=new THREE.Mesh(new THREE.SphereGeometry(6,64,64),new THREE.MeshBasicMaterial({map:mkTex('rock',['#e8620a','#ffa51f','#fff1a8'])}));
-sys.add(sun,glow('rgba(255,190,90,.95)',40),glow('rgba(255,150,60,.35)',120));
-const orbits=[],rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
-P.forEach((p,i)=>{
- const map=mkTex(p.ty,p.c),mat=new THREE.MeshStandardMaterial({map:map,roughness:.92,metalness:0});if(p.ty=='rock'){mat.bumpMap=map;mat.bumpScale=.9}
- const m=new THREE.Mesh(new THREE.SphereGeometry(p.r,64,64),mat);m.userData.i=i;p.a0=Math.random()*6.28;sys.add(m);p.m=m;
- if(p.atm)m.add(atmo(p.r,p.atm));
- if(p.n=='Earth')m.add(new THREE.Mesh(new THREE.SphereGeometry(p.r*1.015,48,48),new THREE.MeshStandardMaterial({map:mkTex('',[],true),transparent:true,depthWrite:false})));
- const o=new THREE.Mesh(new THREE.RingGeometry(p.d-.07,p.d+.07,200),new THREE.MeshBasicMaterial({color:0x7d98d8,transparent:true,opacity:.2,side:THREE.DoubleSide}));o.rotation.x=Math.PI/2;sys.add(o);orbits.push(o);
- if(p.n=='Saturn'){const a=p.r*1.35,b=p.r*2.4,g=new THREE.RingGeometry(a,b,128),pp=g.attributes.position,uv=g.attributes.uv,v=new THREE.Vector3();
-  for(let k=0;k<pp.count;k++){v.fromBufferAttribute(pp,k);uv.setXY(k,(v.length()-a)/(b-a),.5)}
-  const kc=document.createElement('canvas');kc.width=256;kc.height=4;const x=kc.getContext('2d');for(let k=0;k<256;k++){const al=(k>118&&k<126)?.05:.35+.5*Math.abs(Math.sin(k*.37)*Math.sin(k*.11));x.fillStyle='rgba(222,205,165,'+al+')';x.fillRect(k,0,1,4)}
-  const rg=new THREE.Mesh(g,new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(kc),transparent:true,side:THREE.DoubleSide,depthWrite:false}));rg.rotation.x=Math.PI/2+.4;m.add(rg)}
-});
-{const a=[];for(let i=0;i<2200;i++){const t=Math.random()*6.283,r=46+Math.random()*9;a.push(Math.cos(t)*r,(Math.random()-.5)*1.4,Math.sin(t)*r)}
- const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(a,3));sys.add(new THREE.Points(g,new THREE.PointsMaterial({size:1.2,color:0x9a9288,sizeAttenuation:false})))}
-const stars=(()=>{const a=[];for(let i=0;i<3000;i++){const u=Math.random()*2-1,t=Math.random()*6.2832,q=Math.sqrt(1-u*u),m=1000+Math.random()*600;a.push(q*Math.cos(t)*m,u*m,q*Math.sin(t)*m)}
- const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(a,3));const s=new THREE.Points(g,new THREE.PointsMaterial({size:1.7,color:0xd8e2ff,sizeAttenuation:false,fog:false}));s.renderOrder=-1;scene.add(s);return s})();
+/* ============ INITIALIZE APP (Called after data loads) ============ */
+function initApp() {
+ const cv=document.getElementById('c'),R=new THREE.WebGLRenderer({canvas:cv,antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,2));
+ const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(55,1,.1,4000);
+ const amb=new THREE.AmbientLight(0x6070aa,.32),sunL=new THREE.PointLight(0xfff2d8,2.4,0,1.1);scene.add(amb,sunL);
+ const sys=new THREE.Group(),surf=new THREE.Group();scene.add(sys,surf);surf.visible=false;
+ const sun=new THREE.Mesh(new THREE.SphereGeometry(6,64,64),new THREE.MeshBasicMaterial({map:mkTex('rock',['#e8620a','#ffa51f','#fff1a8'])}));
+ sys.add(sun,glow('rgba(255,190,90,.95)',40),glow('rgba(255,150,60,.35)',120));
+ const orbits=[],rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+ P.forEach((p,i)=>{
+  const map=mkTex(p.ty,p.c),mat=new THREE.MeshStandardMaterial({map:map,roughness:.92,metalness:0});if(p.ty=='rock'){mat.bumpMap=map;mat.bumpScale=.9}
+  const m=new THREE.Mesh(new THREE.SphereGeometry(p.r,64,64),mat);m.userData.i=i;p.a0=Math.random()*6.28;sys.add(m);p.m=m;
+  if(p.atm)m.add(atmo(p.r,p.atm));
+  if(p.n=='Earth')m.add(new THREE.Mesh(new THREE.SphereGeometry(p.r*1.015,48,48),new THREE.MeshStandardMaterial({map:mkTex('',[],true),transparent:true,depthWrite:false})));
+  const o=new THREE.Mesh(new THREE.RingGeometry(p.d-.07,p.d+.07,200),new THREE.MeshBasicMaterial({color:0x7d98d8,transparent:true,opacity:.2,side:THREE.DoubleSide}));o.rotation.x=Math.PI/2;sys.add(o);orbits.push(o);
+  if(p.n=='Saturn'){const a=p.r*1.35,b=p.r*2.4,g=new THREE.RingGeometry(a,b,128),pp=g.attributes.position,uv=g.attributes.uv,v=new THREE.Vector3();
+   for(let k=0;k<pp.count;k++){v.fromBufferAttribute(pp,k);uv.setXY(k,(v.length()-a)/(b-a),.5)}
+   const kc=document.createElement('canvas');kc.width=256;kc.height=4;const x=kc.getContext('2d');for(let k=0;k<256;k++){const al=(k>118&&k<126)?.05:.35+.5*Math.abs(Math.sin(k*.37)*Math.sin(k*.11));x.fillStyle='rgba(222,205,165,'+al+')';x.fillRect(k,0,1,4)}
+   const rg=new THREE.Mesh(g,new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(kc),transparent:true,side:THREE.DoubleSide,depthWrite:false}));rg.rotation.x=Math.PI/2+.4;m.add(rg)}
+ });
+ {const a=[];for(let i=0;i<2200;i++){const t=Math.random()*6.283,r=46+Math.random()*9;a.push(Math.cos(t)*r,(Math.random()-.5)*1.4,Math.sin(t)*r)}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(a,3));sys.add(new THREE.Points(g,new THREE.PointsMaterial({size:1.2,color:0x9a9288,sizeAttenuation:false})))}
+ const stars=(()=>{const a=[];for(let i=0;i<3000;i++){const u=Math.random()*2-1,t=Math.random()*6.2832,q=Math.sqrt(1-u*u),m=1000+Math.random()*600;a.push(q*Math.cos(t)*m,u*m,q*Math.sin(t)*m)}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(a,3));const s=new THREE.Points(g,new THREE.PointsMaterial({size:1.7,color:0xd8e2ff,sizeAttenuation:false,fog:false}));s.renderOrder=-1;scene.add(s);return s})();
 
-/* ============ SURFACE WORLD ============ */
-let env,H,dome,sunSpr,dust,dpos,dirL,hemi,pl={x:0,y:0,z:0,vy:0},ocean;
-function buildSurface(p){env=p.env;while(surf.children.length)surf.remove(surf.children[0]);const A=env.amp,deck=!!env.deck;
- H=(x,z)=>deck?(fbm(x*.01,z*.01,3)-.4)*A:(fbm(x*.008,z*.008,4)-.42)*A*1.6+fbm(x*.07,z*.07,2)*A*.12;
- const S=900,N=220,geo=new THREE.PlaneGeometry(S,S,N,N);geo.rotateX(-Math.PI/2);const ps=geo.attributes.position,col=[],c1=new THREE.Color(env.g1),c2=new THREE.Color(env.g2),cc=new THREE.Color();
- for(let i=0;i<ps.count;i++){const x=ps.getX(i),z=ps.getZ(i),h=H(x,z);ps.setY(i,h);cc.copy(c1).lerp(c2,Math.max(0,Math.min(1,fbm(x*.03,z*.03,3)*1.3+h/(A*3)-.1)));col.push(cc.r,cc.g,cc.b)}
- geo.setAttribute('color',new THREE.Float32BufferAttribute(col,3));geo.computeVertexNormals();
- surf.add(new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,flatShading:!deck&&!env.ocean})));
- dirL=new THREE.DirectionalLight(0xffffff,env.si);dirL.position.set(-.5,.3,-.8).multiplyScalar(100);hemi=new THREE.HemisphereLight(new THREE.Color(env.top),new THREE.Color(env.g1),env.sun>1?.12:.55);surf.add(dirL,hemi);
- dome=new THREE.Mesh(new THREE.SphereGeometry(1500,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,uniforms:{top:{value:new THREE.Color(env.top)},hor:{value:new THREE.Color(env.hor)}},
-  vertexShader:'varying vec3 p;void main(){p=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'varying vec3 p;uniform vec3 top,hor;void main(){float h=clamp(p.y*1.8,0.,1.);gl_FragColor=vec4(mix(hor,top,pow(h,.55)),1.);}'}));dome.renderOrder=-3;surf.add(dome);
- sunSpr=new THREE.Group();if(env.sun>0){const g1=glow('rgba(255,250,235,1)',90*env.sun),g2=glow('rgba(255,230,180,.35)',420*Math.sqrt(env.sun));sunSpr.add(g1,g2)}surf.add(sunSpr);
- if(env.ocean){ocean=new THREE.Mesh(new THREE.PlaneGeometry(S,S),new THREE.MeshStandardMaterial({color:0x1f5fae,transparent:true,opacity:.82,roughness:.15,metalness:.5}));ocean.rotation.x=-Math.PI/2;ocean.position.y=0;surf.add(ocean)}
- if(env.trees){const tg=new THREE.ConeGeometry(2,7,6),tm=new THREE.MeshStandardMaterial({color:0x2d5a2a,flatShading:true});for(let i=0;i<260;i++){const x=(Math.random()-.5)*600,z=(Math.random()-.5)*600,h=H(x,z);if(h>2&&h<A*.6){const t=new THREE.Mesh(tg,tm);t.position.set(x,h+3.2,z);t.scale.setScalar(.7+Math.random());surf.add(t)}}}
- if(!deck){const rg=new THREE.DodecahedronGeometry(1),rmat=new THREE.MeshStandardMaterial({color:env.g1,flatShading:true,roughness:1});for(let i=0;i<150;i++){const x=(Math.random()-.5)*500,z=(Math.random()-.5)*500,h=H(x,z);if(h<0&&env.ocean)continue;const r=new THREE.Mesh(rg,rmat);r.scale.set(.4+Math.random()*2,.3+Math.random()*1.4,.4+Math.random()*2);r.position.set(x,h+.2,z);r.rotation.set(Math.random(),Math.random(),Math.random());surf.add(r)}}
- if(env.dust){const n=900;dpos=new Float32Array(n*3);for(let i=0;i<n*3;i++)dpos[i]=(Math.random()-.5)*80;const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(dpos,3));dust=new THREE.Points(g,new THREE.PointsMaterial({size:env.deck?2.4:1.6,color:new THREE.Color(env.dc),transparent:true,opacity:.55,sizeAttenuation:false,fog:false,depthWrite:false}));dust.frustumCulled=false;surf.add(dust)}else dust=null;
- let sx=0,sz=0;if(env.ocean){for(let r=0;r<400;r+=8){let ok=0;for(let a=0;a<6.28;a+=.4){const x=Math.cos(a)*r,z=Math.sin(a)*r;if(H(x,z)>4){sx=x;sz=z;ok=1;break}}if(ok)break}}
- pl.x=sx;pl.z=sz;pl.y=H(sx,sz)+1.7;pl.vy=0;scene.fog=new THREE.FogExp2(new THREE.Color(env.hor),env.fd||.00005)}
+ let bob=0,mvg=0,mt,cl,env,H,dome,sunSpr,dust,dpos,dirL,hemi,pl={x:0,y:0,z:0,vy:0},ocean;
+ function buildSurface(p){env=p.env;while(surf.children.length)surf.remove(surf.children[0]);const A=env.amp,deck=!!env.deck;
+  const CR=[];for(let i=0;i<(env.cr||0);i++)CR.push([(Math.random()-.5)*800,(Math.random()-.5)*800,12+Math.random()*50]);const cr=(x,z)=>{let q=0;for(const c of CR){const d=Math.hypot(x-c[0],z-c[1])/c[2];if(d<1.4)q+=d<1?-(1-d*d)*c[2]*.2:Math.exp(-(d-1)*6)*c[2]*.04}return q};
+  H=(x,z)=>deck?(fbm(x*.01,z*.01,3)-.4)*A:(fbm(x*.008,z*.008,4)-.42)*A*1.6+fbm(x*.07,z*.07,2)*A*.12+cr(x,z);
+  const S=900,N=220,geo=new THREE.PlaneGeometry(S,S,N,N);geo.rotateX(-Math.PI/2);const ps=geo.attributes.position,col=[],c1=new THREE.Color(env.g1),c2=new THREE.Color(env.g2),cc=new THREE.Color();
+  for(let i=0;i<ps.count;i++){const x=ps.getX(i),z=ps.getZ(i),h=H(x,z);ps.setY(i,h);cc.copy(c1).lerp(c2,Math.max(0,Math.min(1,fbm(x*.03,z*.03,3)*1.3+h/(A*3)-.1)));col.push(cc.r,cc.g,cc.b)}
+  geo.setAttribute('color',new THREE.Float32BufferAttribute(col,3));geo.computeVertexNormals();
+  surf.add(new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,flatShading:!deck&&!env.ocean})));
+  dirL=new THREE.DirectionalLight(0xffffff,env.si);dirL.position.set(-.5,.3,-.8).multiplyScalar(100);hemi=new THREE.HemisphereLight(new THREE.Color(env.top),new THREE.Color(env.g1),env.sun>1?.12:.55);surf.add(dirL,hemi);
+  dome=new THREE.Mesh(new THREE.SphereGeometry(1500,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,uniforms:{top:{value:new THREE.Color(env.top)},hor:{value:new THREE.Color(env.hor)}},
+   vertexShader:'varying vec3 p;void main(){p=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'varying vec3 p;uniform vec3 top,hor;void main(){float h=clamp(p.y*1.8,0.,1.);gl_FragColor=vec4(mix(hor,top,pow(h,.55)),1.);}'}));dome.renderOrder=-3;surf.add(dome);
+  mt=null;cl=null;
+  if(!deck){const Rr=env.fd?Math.min(760,1.1/env.fd):760,cg=new THREE.CylinderGeometry(Rr,Rr,1,160,1,true),pp=cg.attributes.position;for(let i=0;i<pp.count;i++){const x=pp.getX(i),z=pp.getZ(i),a=Math.atan2(z,x);pp.setY(i,pp.getY(i)>0?Rr*(.03+fbm(Math.cos(a)*2.2+9,Math.sin(a)*2.2+9,4)*.2):-40)}
+   mt=new THREE.Mesh(cg,new THREE.MeshBasicMaterial({color:new THREE.Color(env.hor).lerp(new THREE.Color(env.g1),.5),side:THREE.BackSide}));surf.add(mt)}
+  if(env.clouds){cl=new THREE.Group();for(let i=0;i<16;i++){const q=glow(env.clouds,300+Math.random()*300),a=Math.random()*6.28,e=.18+Math.random()*.35;q.position.set(Math.cos(a)*900,Math.sin(e)*900,Math.sin(a)*900);cl.add(q)}surf.add(cl)}
+  sunSpr=new THREE.Group();if(env.sun>0){const g1=glow('rgba(255,250,235,1)',90*env.sun),g2=glow('rgba(255,230,180,.35)',420*Math.sqrt(env.sun));sunSpr.add(g1,g2)}surf.add(sunSpr);
+  if(env.ocean){ocean=new THREE.Mesh(new THREE.PlaneGeometry(S,S),new THREE.MeshStandardMaterial({color:0x1f5fae,transparent:true,opacity:.82,roughness:.15,metalness:.5}));ocean.rotation.x=-Math.PI/2;ocean.position.y=0;surf.add(ocean)}
+  if(env.trees){const tg=new THREE.ConeGeometry(2,7,6),tm=new THREE.MeshStandardMaterial({color:0x2d5a2a,flatShading:true});for(let i=0;i<260;i++){const x=(Math.random()-.5)*600,z=(Math.random()-.5)*600,h=H(x,z);if(h>2&&h<A*.6){const t=new THREE.Mesh(tg,tm);t.position.set(x,h+3.2,z);t.scale.setScalar(.7+Math.random());surf.add(t)}}}
+  if(!deck){const rg=new THREE.DodecahedronGeometry(1),rmat=new THREE.MeshStandardMaterial({color:env.g1,flatShading:true,roughness:1});for(let i=0;i<150;i++){const x=(Math.random()-.5)*500,z=(Math.random()-.5)*500,h=H(x,z);if(h<0&&env.ocean)continue;const r=new THREE.Mesh(rg,rmat);r.scale.set(.4+Math.random()*2,.3+Math.random()*1.4,.4+Math.random()*2);r.position.set(x,h+.2,z);r.rotation.set(Math.random(),Math.random(),Math.random());surf.add(r)}}
+  if(env.dust){const n=900;dpos=new Float32Array(n*3);for(let i=0;i<n*3;i++)dpos[i]=(Math.random()-.5)*80;const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(dpos,3));dust=new THREE.Points(g,new THREE.PointsMaterial({size:env.deck?2.4:1.6,color:new THREE.Color(env.dc),transparent:true,opacity:.55,sizeAttenuation:false,fog:false,depthWrite:false}));dust.frustumCulled=false;surf.add(dust)}else dust=null;
+  let sx=0,sz=0;if(env.ocean){for(let r=0;r<400;r+=8){let ok=0;for(let a=0;a<6.28;a+=.4){const x=Math.cos(a)*r,z=Math.sin(a)*r;if(H(x,z)>4){sx=x;sz=z;ok=1;break}}if(ok)break}}
+  pl.x=sx;pl.z=sz;pl.y=H(sx,sz)+1.7;pl.vy=0;scene.fog=new THREE.FogExp2(new THREE.Color(env.hor),env.fd||.00005)}
 
-/* ============ STATE + CONTROLS ============ */
-const st={mode:'sys',sel:-1,th:.6,ph:1.05,r:170,tgt:new THREE.Vector3(),gth:.6,gph:1.05,gr:170,gt:new THREE.Vector3(),yaw:0,pit:0};
-let drag=null,moved=0,pause=false,suit=true,left=0,dead=false,jumpReq=false;const K={};
-const $=id=>document.getElementById(id),panel=$('panel'),rail=$('rail'),back=$('back'),hint=$('hint'),hud=$('hud'),vit=$('vit'),vig=$('vig'),visor=$('visor'),fade=$('fade');
-function resize(){R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}addEventListener('resize',resize);resize();
-cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};moved=0;cv.setPointerCapture(e.pointerId)});
-cv.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag={x:e.clientX,y:e.clientY};moved+=Math.abs(dx)+Math.abs(dy);
- if(st.mode=='surf'){st.yaw+=dx*.004;st.pit=Math.max(-1.3,Math.min(1.3,st.pit-dy*.004))}else{st.gth-=dx*.006;st.gph=Math.max(.15,Math.min(2.9,st.gph-dy*.006))}});
-cv.addEventListener('pointerup',e=>{if(moved<6&&st.mode!='surf')pick(e);drag=null});
-cv.addEventListener('wheel',e=>{e.preventDefault();if(st.mode=='surf')return;const f=st.mode=='sys'?[25,330]:[P[st.sel].r*1.8,P[st.sel].r*16];st.gr=Math.max(f[0],Math.min(f[1],st.gr*(1+e.deltaY*.0012)))},{passive:false});
-addEventListener('keydown',e=>{K[e.code]=1;if(e.code=='Space'&&st.mode=='surf'){jumpReq=true;e.preventDefault()}if(e.code=='Escape')back.click()});addEventListener('keyup',e=>K[e.code]=0);
-const ray=new THREE.Raycaster(),mv=new THREE.Vector2();
-function pick(e){mv.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);ray.setFromCamera(mv,cam);const h=ray.intersectObjects(P.map(p=>p.m),false)[0];if(h)select(h.object.userData.i)}
-P.forEach((p,i)=>{const b=document.createElement('button');b.className='it';b.innerHTML='<i style="background:radial-gradient(circle at 35% 30%,'+p.c[2]+','+p.c[1]+' 60%,'+p.c[0]+')"></i>'+p.n;b.onclick=()=>select(i);rail.appendChild(b);p.b=b;
- const l=document.createElement('div');l.className='lbl';l.textContent=p.n;l.onclick=()=>select(i);document.body.appendChild(l);p.l=l});
-function mark(i){P.forEach((p,k)=>{p.b.classList.toggle('on',k==i);p.l.classList.toggle('on',k==i)})}
-$('tOrb').onclick=e=>{e.target.classList.toggle('on');const v=e.target.classList.contains('on');orbits.forEach(o=>o.visible=v)};
-$('tPause').onclick=e=>{pause=!pause;e.target.classList.toggle('on',pause);e.target.textContent=pause?'Resume orbits':'Pause orbits'};
+ const st={mode:'sys',sel:-1,th:.6,ph:1.05,r:170,tgt:new THREE.Vector3(),gth:.6,gph:1.05,gr:170,gt:new THREE.Vector3(),yaw:0,pit:0};
+ let drag=null,moved=0,pause=false,suit=true,left=0,dead=false,jumpReq=false;const K={};
+ const $=id=>document.getElementById(id),panel=$('panel'),rail=$('rail'),back=$('back'),hint=$('hint'),hud=$('hud'),vit=$('vit'),vig=$('vig'),visor=$('visor'),fade=$('fade');
+ function resize(){R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}addEventListener('resize',resize);resize();
+ cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};moved=0;cv.setPointerCapture(e.pointerId)});
+ cv.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag={x:e.clientX,y:e.clientY};moved+=Math.abs(dx)+Math.abs(dy);
+  if(st.mode=='surf'){st.yaw+=dx*.004;st.pit=Math.max(-1.3,Math.min(1.3,st.pit-dy*.004))}else{st.gth-=dx*.006;st.gph=Math.max(.15,Math.min(2.9,st.gph-dy*.006))}});
+ cv.addEventListener('pointerup',e=>{if(moved<6&&st.mode!='surf')pick(e);drag=null});
+ cv.addEventListener('wheel',e=>{e.preventDefault();if(st.mode=='surf')return;const f=st.mode=='sys'?[25,330]:[P[st.sel].r*1.8,P[st.sel].r*16];st.gr=Math.max(f[0],Math.min(f[1],st.gr*(1+e.deltaY*.0012)))},{passive:false});
+ addEventListener('keydown',e=>{K[e.code]=1;if(e.code=='Space'&&st.mode=='surf'){jumpReq=true;e.preventDefault()}if(e.code=='Escape')back.click()});addEventListener('keyup',e=>K[e.code]=0);
+ const ray=new THREE.Raycaster(),mv=new THREE.Vector2();
+ function pick(e){mv.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);ray.setFromCamera(mv,cam);const h=ray.intersectObjects(P.map(p=>p.m),false)[0];if(h)select(h.object.userData.i)}
+ P.forEach((p,i)=>{const b=document.createElement('button');b.className='it';b.innerHTML='<i style="background:radial-gradient(circle at 35% 30%,'+p.c[2]+','+p.c[1]+' 60%,'+p.c[0]+')"></i>'+p.n;b.onclick=()=>select(i);rail.appendChild(b);p.b=b;
+  const l=document.createElement('div');l.className='lbl';l.textContent=p.n;l.onclick=()=>select(i);document.body.appendChild(l);p.l=l});
+ function mark(i){P.forEach((p,k)=>{p.b.classList.toggle('on',k==i);p.l.classList.toggle('on',k==i)})}
+ $('tOrb').onclick=e=>{e.target.classList.toggle('on');const v=e.target.classList.contains('on');orbits.forEach(o=>o.visible=v)};
+ $('tPause').onclick=e=>{pause=!pause;e.target.classList.toggle('on',pause);e.target.textContent=pause?'Resume orbits':'Pause orbits'};
 
-/* ============ PANEL ============ */
-function select(i){st.mode='focus';st.sel=i;mark(i);const p=P[i];st.gr=p.r*4.6;st.gph=1.3;back.style.display='';back.textContent='All planets';hint.textContent='Drag to orbit '+p.n+' · scroll to zoom';ui(p)}
-function ui(p){panel.innerHTML='<div class="ph"><h2>'+p.n+'</h2><p>'+p.tag+'</p></div><div class="tabs">'+['Overview','Survival','You’d see','Life'].map((t,i)=>'<button data-i="'+i+'" class="'+(i?'':'on')+'">'+t+'</button>').join('')+'</div><div class="tb" id="tb"></div><button class="btn" id="enter">'+(p.env.deck?'Descend into '+p.n+'’s clouds':'Land on '+p.n)+'</button>';
- const tb=$('tb'),safe=p.tt===null;
- const tabs=[()=>'<div class="grid">'+[['Temperature',p.t],['Gravity',p.gr],['Atmosphere',p.a],['Water availability',p.w],['Radiation risk',p.rad],['Pressure',p.p]].map(x=>'<div class="st"><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('')+'</div>',
- ()=>'<div class="verd '+(safe?'ok':'bad')+'"><small>Without special equipment</small><div class="big">'+(safe?'You can survive':'≈ '+p.tt+' seconds')+'</div><p>'+p.v+'</p></div><h4>Equipment you would need</h4><ul>'+p.eq.map(x=>'<li>'+x+'</li>').join('')+'</ul><div class="st" style="margin-top:12px"><small>Survival time with equipment</small><b>'+p.gt+'</b></div>',
- ()=>'<h4 style="margin-top:0">If you stood here</h4><p>'+p.see+'</p><p style="color:var(--mut)">Press the button below to actually stand there: walk, jump and look around.</p>',
- ()=>'<h4 style="margin-top:0">Could life exist? '+p.life[1]+'</h4><div class="meter">'+[1,2,3,4,5].map(n=>'<i class="'+(n<=p.life[0]?'f':'')+'"></i>').join('')+'</div><p>'+p.life[2]+'</p>'];
- const show=i=>{tb.innerHTML=tabs[i]();panel.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.i==i))};show(0);
- panel.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>show(+b.dataset.i));$('enter').onclick=()=>land(st.sel);panel.classList.add('open')}
+ function select(i){st.mode='focus';st.sel=i;mark(i);const p=P[i];st.gr=p.r*4.6;st.gph=1.3;back.style.display='';back.textContent='All planets';hint.textContent='Drag to orbit '+p.n+' · scroll to zoom';ui(p)}
+ function ui(p){panel.innerHTML='<div class="ph"><h2>'+p.n+'</h2><p>'+p.tag+'</p></div><div class="tabs">'+['Overview','Survival','Sights','Life','Mission'].map((t,i)=>'<button data-i="'+i+'" class="'+(i?'':'on')+'">'+t+'</button>').join('')+'</div><div class="tb" id="tb"></div><button class="btn" id="enter">'+(p.env.deck?'Descend into '+p.n+'’s clouds':'Land on '+p.n)+'</button>';
+  const tb=$('tb'),safe=p.tt===null;
+  const tabs=[()=>'<div class="grid">'+[['Temperature',p.t],['Gravity',p.gr],['Atmosphere',p.a],['Water availability',p.w],['Radiation risk',p.rad],['Pressure',p.p]].map(x=>'<div class="st"><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('')+'</div><p class="fn">Conditions vary by location and altitude.</p>',
+  ()=>'<div class="verd '+(safe?'ok':'bad')+'"><small>Could a human survive without special equipment?</small><div class="big">'+(safe?'Yes, in many places':'No: ≈ '+p.tt+' seconds')+'</div><p>'+p.v+'</p></div>'+(safe?'':'<p class="fn" style="margin-top:-6px">Survival time is an approximate simulation estimate.</p>')+'<h4>Could a human survive with equipment?</h4><p>'+p.gt+'</p><h4>Equipment you would need</h4><ul>'+p.eq.map(x=>'<li>'+x+'</li>').join('')+'</ul>',
+  ()=>'<h4 style="margin-top:0">What you would see if you arrived</h4><p>'+p.see+'</p><p class="fn">Press the button below to stand there: walk, jump and look around.</p>',
+  ()=>'<h4 style="margin-top:0">Could life exist? '+p.life[1]+'</h4><div class="meter">'+[1,2,3,4,5].map(n=>'<i class="'+(n<=p.life[0]?'f':'')+'"></i>').join('')+'</div><p>'+p.life[2]+'</p><p class="fn">Habitability is not evidence of life.</p>',
+  ()=>chal(p,tb)];
+  const show=i=>{const r=tabs[i]();if(typeof r=='string')tb.innerHTML=r;panel.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.i==i))};show(0);
+  panel.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>show(+b.dataset.i));$('enter').onclick=()=>land(st.sel);panel.classList.add('open')}
+ function chal(p,tb){const cap=p.need.reduce((s,k)=>s+G[k].w,0)+10,sel=new Set(),tot=()=>[...sel].reduce((s,k)=>s+G[k].w,0);
+  tb.innerHTML='<div class="verd" style="border-color:var(--line);background:rgba(255,255,255,.04)"><small>Survival challenge</small><div class="big" style="font-size:22px;color:var(--txt)">'+p.ch.t+'</div><p>'+p.ch.m+'</p><p class="fn" style="margin-top:6px">Hazards: '+p.ch.h+'</p></div><h4 style="margin-top:0">Pack your gear <span id="ld"></span></h4><div id="gl"></div><button class="btn" id="go" style="margin-top:8px">Launch mission</button><div id="lg"></div>';
+  const gl=tb.querySelector('#gl'),ld=tb.querySelector('#ld'),upd=()=>{ld.textContent='· '+tot()+' / '+cap+' kg';ld.style.color='var(--mut)'};
+  p.opts.forEach(k=>{const l=document.createElement('label');l.className='gi';l.innerHTML='<input type="checkbox"><span>'+G[k].l+'</span><em>'+G[k].w+' kg</em>';const c=l.firstChild;
+   c.onchange=()=>{if(c.checked){if(tot()+G[k].w>cap){c.checked=false;ld.textContent='· Over the weight limit';ld.style.color='var(--bad)';return}sel.add(k)}else sel.delete(k);upd()};gl.appendChild(l)});upd();
+  tb.querySelector('#go').onclick=()=>{const lg=tb.querySelector('#lg');lg.innerHTML='';const miss=p.need.filter(k=>!sel.has(k)),lines=p.need.map(k=>[sel.has(k),sel.has(k)?G[k].l+': working':G[k].f]);
+   lines.forEach((x,i)=>setTimeout(()=>{const d=document.createElement('div');d.className='ln '+(x[0]?'ok':'no');d.textContent=x[1];lg.appendChild(d);if(i==lines.length-1)setTimeout(()=>{const f=document.createElement('div');f.className='verd '+(miss.length?'bad':'ok');f.style.marginTop='12px';f.innerHTML='<div class="big" style="font-size:24px">'+(miss.length?'Mission failed':'Mission complete')+'</div><p>'+(miss.length?miss.length+' critical system'+(miss.length>1?'s':'')+' missing. Try again.':p.ch.w)+'</p>';lg.appendChild(f)},450)},i*520))};
+  return 1}
 
-/* ============ LAND / LEAVE ============ */
-function land(i){const p=P[i];fade.style.opacity=1;setTimeout(()=>{buildSurface(p);st.mode='surf';sys.visible=false;stars.visible=!!env.stars;sunL.visible=false;amb.intensity=.04;surf.visible=true;scene.background=null;
-  panel.classList.remove('open');rail.style.display='none';P.forEach(q=>q.l.style.display='none');$('tOrb').style.display=$('tPause').style.display='none';back.textContent='Leave '+p.n+' (Esc)';
-  hint.textContent='W A S D to walk · Shift to run · Space to jump · drag to look around';st.yaw=0;st.pit=0;suit=p.tt!==null;left=p.tt||0;dead=false;$('dead').style.display='none';
-  hud.innerHTML='<h3>'+p.n+'</h3><div>Temperature<b>'+p.t.split(',')[0].split(' average')[0]+'</b></div><div>Gravity<b>'+p.gr+'</b></div><div>Pressure<b>'+p.p.split(' (')[0]+'</b></div><div>Air<b>'+p.a.split(',')[0]+'</b></div><div>Radiation<b>'+p.rad.split(',')[0]+'</b></div>';hud.style.display='block';vitals();fade.style.opacity=0},750)}
-function vitals(){const p=P[st.sel];if(p.tt===null){vit.style.display='block';vit.innerHTML='<b>You are safe here</b><div style="color:var(--mut)">Breathable air and a mild climate. No equipment needed.</div>';visor.style.display='none';return}
- vit.style.display='block';visor.style.display=suit?'block':'none';
- vit.innerHTML='<b>'+(suit?'Protection ON: you are safe':'No protection: exposure clock running')+'</b><div class="bar"><i id="vb" style="background:'+(suit?'var(--ok)':'var(--bad)')+'"></i></div><button class="pill" id="sw">'+(suit?'Remove protection and see what happens':'Put protection back on')+'</button>';
- $('sw').onclick=()=>{suit=!suit;if(suit){left=p.tt;vig.style.opacity=0}vitals()}}
-$('rs').onclick=()=>{dead=false;suit=true;left=P[st.sel].tt;$('dead').style.display='none';vig.style.opacity=0;vitals()};
-back.onclick=()=>{if(st.mode=='surf'){fade.style.opacity=1;setTimeout(()=>{st.mode='focus';surf.visible=false;sys.visible=true;stars.visible=true;stars.position.set(0,0,0);sunL.visible=true;amb.intensity=.32;scene.fog=null;hud.style.display=vit.style.display=visor.style.display='none';vig.style.opacity=0;$('dead').style.display='none';
-  rail.style.display='';P.forEach(q=>q.l.style.display='');$('tOrb').style.display=$('tPause').style.display='';back.textContent='All planets';hint.textContent='Drag to orbit · scroll to zoom';panel.classList.add('open');fade.style.opacity=0},700);return}
- if(st.mode=='focus'){st.mode='sys';st.sel=-1;st.gt.set(0,0,0);st.gr=170;st.gph=1.05;panel.classList.remove('open');back.style.display='none';mark(-1);hint.textContent='Drag to rotate · scroll to zoom · click a planet to fly there'}};
+ function land(i){const p=P[i];fade.style.opacity=1;setTimeout(()=>{buildSurface(p);st.mode='surf';sys.visible=false;stars.visible=!!env.stars;sunL.visible=false;amb.intensity=.04;surf.visible=true;scene.background=null;
+   panel.classList.remove('open');rail.style.display='none';P.forEach(q=>q.l.style.display='none');$('tOrb').style.display=$('tPause').style.display='none';back.textContent='Leave '+p.n+' (Esc)';
+   hint.textContent='W A S D to walk · Shift to run · Space to jump · drag to look around';st.yaw=0;st.pit=0;suit=p.tt!==null;left=p.tt||0;dead=false;$('dead').style.display='none';
+   hud.innerHTML='<h3>'+p.n+'</h3><div>Temperature<b>'+p.t.split(' · ')[0].split(' (')[0]+'</b></div><div>Gravity<b>'+p.gr+'</b></div><div>Pressure<b>'+p.p.split(' (')[0]+'</b></div><div>Air<b>'+p.a.split(',')[0]+'</b></div><div>Radiation<b>'+p.rad.split(',')[0]+'</b></div><h4 style="margin:12px 0 4px">Equipment needed</h4><ul style="font-size:12px;color:var(--mut);padding-left:16px">'+p.eq.map(x=>'<li>'+x+'</li>').join('')+'</ul>';hud.style.display='block';vitals();fade.style.opacity=0},750)}
+ function vitals(){const p=P[st.sel];if(p.tt===null){vit.style.display='block';vit.innerHTML='<b>You are safe here</b><div style="color:var(--mut)">Breathable air and a mild climate. No equipment needed.</div>';visor.style.display='none';return}
+  vit.style.display='block';visor.style.display=suit?'block':'none';
+  vit.innerHTML='<b>'+(suit?'Protection ON: you are safe':'No protection: exposure clock running')+'</b><div class="bar"><i id="vb" style="background:'+(suit?'var(--ok)':'var(--bad)')+'"></i></div><button class="pill" id="sw">'+(suit?'Remove protection and see what happens':'Put protection back on')+'</button>';
+  $('sw').onclick=()=>{suit=!suit;if(suit){left=p.tt;vig.style.opacity=0}vitals()}}
+ $('rs').onclick=()=>{dead=false;suit=true;left=P[st.sel].tt;$('dead').style.display='none';vig.style.opacity=0;vitals()};
+ back.onclick=()=>{if(st.mode=='surf'){fade.style.opacity=1;setTimeout(()=>{st.mode='focus';surf.visible=false;sys.visible=true;stars.visible=true;stars.position.set(0,0,0);sunL.visible=true;amb.intensity=.32;scene.fog=null;hud.style.display=vit.style.display=visor.style.display='none';vig.style.opacity=0;$('dead').style.display='none';
+   rail.style.display='';P.forEach(q=>q.l.style.display='');$('tOrb').style.display=$('tPause').style.display='';back.textContent='All planets';hint.textContent='Drag to orbit · scroll to zoom';panel.classList.add('open');fade.style.opacity=0},700);return}
+  if(st.mode=='focus'){st.mode='sys';st.sel=-1;st.gt.set(0,0,0);st.gr=170;st.gph=1.05;panel.classList.remove('open');back.style.display='none';mark(-1);hint.textContent='Drag to rotate · scroll to zoom · click a planet to fly there'}};
 
-/* ============ LOOP ============ */
-const clk=new THREE.Clock(),v3=new THREE.Vector3();
-function loop(){requestAnimationFrame(loop);const dt=Math.min(clk.getDelta(),.05),T=clk.elapsedTime;
- if(st.mode!='surf'){
-  P.forEach(p=>{if(!pause&&!rm)p.a0+=p.s*dt*.1;p.m.position.set(Math.cos(p.a0)*p.d,0,Math.sin(p.a0)*p.d);p.m.rotation.y+=dt*.25});sun.rotation.y+=dt*.04;
-  if(st.mode=='focus')st.gt.copy(P[st.sel].m.position);
-  const k=1-Math.pow(.003,dt);st.th+=(st.gth-st.th)*k;st.ph+=(st.gph-st.ph)*k;st.r+=(st.gr-st.r)*k;st.tgt.lerp(st.gt,k);if(st.mode=='sys'&&!drag&&!rm)st.gth+=dt*.015;
-  cam.position.set(st.tgt.x+st.r*Math.sin(st.ph)*Math.cos(st.th),st.tgt.y+st.r*Math.cos(st.ph),st.tgt.z+st.r*Math.sin(st.ph)*Math.sin(st.th));cam.lookAt(st.tgt);
-  P.forEach(p=>{v3.copy(p.m.position);v3.project(cam);p.l.style.visibility=v3.z<1?'visible':'hidden';p.l.style.transform='translate('+((v3.x*.5+.5)*innerWidth)+'px,'+((-v3.y*.5+.5)*innerHeight+p.r*(st.mode=='sys'?4:12)+14)+'px) translate(-50%,0)'})}
- else{const p=P[st.sel];
-  if(!dead){const sp=(K.ShiftLeft?9:4)*(p.env.deck?.6:1),fx=Math.sin(st.yaw),fz=-Math.cos(st.yaw);let mx=0,mz=0;
-   if(K.KeyW||K.ArrowUp){mx+=fx;mz+=fz}if(K.KeyS||K.ArrowDown){mx-=fx;mz-=fz}if(K.KeyA||K.ArrowLeft){mx+=fz;mz-=fx}if(K.KeyD||K.ArrowRight){mx-=fz;mz+=fx}
-   pl.x=Math.max(-380,Math.min(380,pl.x+mx*sp*dt));pl.z=Math.max(-380,Math.min(380,pl.z+mz*sp*dt))}
-  const gy=H(pl.x,pl.z)+1.7,g=env.g*9.81;if(jumpReq&&pl.y<=gy+.05&&!dead)pl.vy=4.6;jumpReq=false;pl.vy-=g*dt;pl.y+=pl.vy*dt;if(pl.y<gy){pl.y=gy;pl.vy=0}
-  cam.position.set(pl.x,pl.y,pl.z);cam.lookAt(pl.x+Math.sin(st.yaw)*Math.cos(st.pit)*10,pl.y+Math.sin(st.pit)*10,pl.z-Math.cos(st.yaw)*Math.cos(st.pit)*10);
-  dome.position.copy(cam.position);stars.position.copy(cam.position);sunSpr.position.set(cam.position.x-500,cam.position.y+260,cam.position.z-800);
-  if(dust){const w=env.wind||[1.5,0,.5];for(let i=0;i<dpos.length;i+=3){dpos[i]+=w[0]*dt;dpos[i+2]+=w[2]*dt;dpos[i+1]+=Math.sin(T+i)*.02;for(let a=0;a<3;a+=3){}
-    const ax=[cam.position.x,cam.position.y,cam.position.z];for(let a=0;a<3;a++){const d=dpos[i+a]-ax[a];if(d>40)dpos[i+a]-=80;else if(d<-40)dpos[i+a]+=80}}dust.geometry.attributes.position.needsUpdate=true}
-  if(env.flash){const f=Math.random()<.004?1:0;if(f)hemi.intensity=3.2;else hemi.intensity+=((env.sun>1?.12:.55)-hemi.intensity)*.15}
-  if(p.tt!==null&&!suit&&!dead){left-=dt;const r=Math.max(0,left/p.tt),vb=$('vb');if(vb)vb.style.width=(r*100)+'%';vig.style.opacity=Math.pow(1-r,1.6);
-   if(left<=0){dead=true;$('dm').textContent=p.v;$('dead').style.display='flex'}}
-  else{const vb=$('vb');if(vb&&suit)vb.style.width='100%'}}
- R.render(scene,cam)}
-loop();
+ const clk=new THREE.Clock(),v3=new THREE.Vector3();
+ function loop(){requestAnimationFrame(loop);const dt=Math.min(clk.getDelta(),.05),T=clk.elapsedTime;
+  if(st.mode!='surf'){
+   P.forEach(p=>{if(!pause&&!rm)p.a0+=p.s*dt*.1;p.m.position.set(Math.cos(p.a0)*p.d,0,Math.sin(p.a0)*p.d);p.m.rotation.y+=dt*.25});sun.rotation.y+=dt*.04;
+   if(st.mode=='focus')st.gt.copy(P[st.sel].m.position);
+   const k=1-Math.pow(.003,dt);st.th+=(st.gth-st.th)*k;st.ph+=(st.gph-st.ph)*k;st.r+=(st.gr-st.r)*k;st.tgt.lerp(st.gt,k);if(st.mode=='sys'&&!drag&&!rm)st.gth+=dt*.015;
+   cam.position.set(st.tgt.x+st.r*Math.sin(st.ph)*Math.cos(st.th),st.tgt.y+st.r*Math.cos(st.ph),st.tgt.z+st.r*Math.sin(st.ph)*Math.sin(st.th));cam.lookAt(st.tgt);
+   P.forEach(p=>{v3.copy(p.m.position);v3.project(cam);p.l.style.visibility=v3.z<1?'visible':'hidden';p.l.style.transform='translate('+((v3.x*.5+.5)*innerWidth)+'px,'+((-v3.y*.5+.5)*innerHeight+p.r*(st.mode=='sys'?4:12)+14)+'px) translate(-50%,0)'})}
+  else{const p=P[st.sel];mvg=0;
+   if(!dead){const sp=(K.ShiftLeft?9:4)*(p.env.deck?.6:1),fx=Math.sin(st.yaw),fz=-Math.cos(st.yaw);let mx=0,mz=0;
+    if(K.KeyW||K.ArrowUp){mx+=fx;mz+=fz}if(K.KeyS||K.ArrowDown){mx-=fx;mz-=fz}if(K.KeyA||K.ArrowLeft){mx+=fz;mz-=fx}if(K.KeyD||K.ArrowRight){mx-=fz;mz+=fx}
+    mvg=(mx||mz)?1:0;bob+=mvg*dt*(K.ShiftLeft?11:7);pl.x=Math.max(-380,Math.min(380,pl.x+mx*sp*dt));pl.z=Math.max(-380,Math.min(380,pl.z+mz*sp*dt))}
+   const gy=H(pl.x,pl.z)+1.7,g=env.g*9.81;if(jumpReq&&pl.y<=gy+.05&&!dead)pl.vy=4.6;jumpReq=false;pl.vy-=g*dt;pl.y+=pl.vy*dt;if(pl.y<gy){pl.y=gy;pl.vy=0}
+   cam.position.set(pl.x,pl.y+Math.sin(bob)*.06*mvg,pl.z);cam.lookAt(pl.x+Math.sin(st.yaw)*Math.cos(st.pit)*10,pl.y+Math.sin(st.pit)*10,pl.z-Math.cos(st.yaw)*Math.cos(st.pit)*10);
+   dome.position.copy(cam.position);if(mt)mt.position.set(pl.x,0,pl.z);if(cl)cl.position.copy(cam.position);stars.position.copy(cam.position);sunSpr.position.set(cam.position.x-500,cam.position.y+260,cam.position.z-800);
+   if(dust){const w=env.wind||[1.5,0,.5];for(let i=0;i<dpos.length;i+=3){dpos[i]+=w[0]*dt;dpos[i+2]+=w[2]*dt;dpos[i+1]+=Math.sin(T+i)*.02;for(let a=0;a<3;a+=3){}
+     const ax=[cam.position.x,cam.position.y,cam.position.z];for(let a=0;a<3;a++){const d=dpos[i+a]-ax[a];if(d>40)dpos[i+a]-=80;else if(d<-40)dpos[i+a]+=80}}dust.geometry.attributes.position.needsUpdate=true}
+   if(env.flash){const f=Math.random()<.004?1:0;if(f)hemi.intensity=3.2;else hemi.intensity+=((env.sun>1?.12:.55)-hemi.intensity)*.15}
+   if(p.tt!==null&&!suit&&!dead){left-=dt;const r=Math.max(0,left/p.tt),vb=$('vb');if(vb)vb.style.width=(r*100)+'%';vig.style.opacity=Math.pow(1-r,1.6);
+    if(left<=0){dead=true;$('dm').textContent=p.v;$('dead').style.display='flex'}}
+   else{const vb=$('vb');if(vb&&suit)vb.style.width='100%'}}
+  R.render(scene,cam)}
+ $('help').onclick=()=>$('intro').style.display='flex';$('startb').onclick=()=>$('intro').style.display='none';
+ loop();
+}
+
+// Boot up the app by fetching data first
+loadPlanetData();
 </script></body></html>
