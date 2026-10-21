@@ -2,6 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Astrovoyage – Could you survive on another world?</title>
+<meta name="description" content="Explore the solar system in 3D, land on a planet and find out if you could survive there. Data from NASA.">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#04060b;--glass:rgba(12,16,26,.72);--line:rgba(190,210,255,.14);--txt:#eaf0ff;--mut:#8c98b8;--acc:#ffb347;--cy:#62e3ff;--bad:#ff5d62;--ok:#4ade80}
@@ -57,78 +58,92 @@ h4{margin:16px 0 8px;font-size:14px}ul{margin:0;padding-left:18px}li{margin-bott
 #intro{position:fixed;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%,rgba(28,38,70,.88),rgba(4,6,11,.97))}
 #intro .glass{max-width:640px;padding:40px;background:rgba(12,16,26,.85)}#intro h1{font-size:46px;line-height:1;margin:0 0 10px;letter-spacing:-.02em}#intro h1 span{color:var(--acc)}
 #intro ol{padding-left:20px;margin:16px 0 22px}#intro li{margin-bottom:10px}#intro .btn{width:auto;padding:14px 30px;margin:0}
+.g{margin-bottom:15px}.gh{display:flex;justify-content:space-between;gap:12px;align-items:baseline}.gh b{font-size:14px;text-align:right;max-width:68%}
+.gb{position:relative;height:8px;border-radius:9px;background:rgba(255,255,255,.1);margin-top:7px}.gb i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--cy),var(--acc));transition:width .8s}.gb u{position:absolute;top:-3px;width:2px;height:14px;background:#fff;opacity:.9}
+.it.seen::after{content:'✓';margin-left:auto;color:var(--ok)}.it.won::after{content:'★ ✓';margin-left:auto;color:var(--acc)}
+#sym{position:fixed;left:50%;bottom:170px;transform:translateX(-50%);width:520px;z-index:7;text-align:center;color:#ffd7d8;font:500 16px/1.5 'Instrument Sans';text-shadow:0 2px 12px #000;pointer-events:none}#sym div{animation:fi .8s both}@keyframes fi{from{opacity:0;transform:translateY(6px)}}
+#entry{position:fixed;inset:0;z-index:19;pointer-events:none;opacity:0;transition:opacity 1.4s;background:radial-gradient(ellipse at 50% 125%,rgba(255,150,50,.85),rgba(255,70,0,.3) 40%,transparent 72%)}
+#load{position:fixed;inset:0;z-index:40;background:#04060b;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .6s}
+#load h1{font-size:44px;margin:0}#load h1 span{color:var(--acc)}#lbar{width:320px;height:5px;border-radius:9px;background:rgba(255,255,255,.12);overflow:hidden}#lb{height:100%;width:6%;background:var(--acc);transition:width .4s}
+#cred{position:fixed;right:28px;bottom:6px;z-index:3;font-size:11px;color:var(--mut);opacity:.8}
 </style></head><body>
 <canvas id="c"></canvas>
 <div id="brand">Astro<span>voyage</span></div>
 <nav id="rail" class="glass" aria-label="Planets"></nav>
-<div id="tools"><button class="pill on" id="tOrb">Orbit lines</button><button class="pill" id="tPause">Pause orbits</button><button class="pill" id="help">How it works</button><button class="pill" id="back" style="display:none">All planets</button></div>
-<div id="hint" class="glass">Loading planetary data from database...</div>
+<div id="tools"><span class="pill" id="prog">Explored 0/8</span><button class="pill" id="snd">Sound on</button><button class="pill on" id="tOrb">Orbit lines</button><button class="pill" id="tPause">Pause orbits</button><button class="pill" id="help">How it works</button><button class="pill" id="back" style="display:none">All planets</button></div>
+<div id="hint" class="glass">Connecting to live database...</div>
 <aside id="panel" class="glass"></aside>
 <aside id="hud" class="glass"></aside>
 <div id="vit" class="glass"></div>
 <div id="vig"></div><div id="visor"></div><div id="fade"></div>
 <div id="dead"><div><h2>Consciousness lost</h2><p id="dm"></p><button class="pill" id="rs">Put suit back on and respawn</button></div></div>
-<div id="intro" style="display:none"><div class="glass"><h1>Astro<span>voyage</span></h1><p>Fly across the solar system, land on a planet and find out whether a human could survive there.</p><ol><li><b>Click a planet.</b> See its temperature, gravity, atmosphere, water, radiation, what you would see, and whether life could exist.</li><li><b>Land and walk.</b> Use W A S D, Shift and Space. Then remove your protection to feel how fast the environment kills you.</li><li><b>Take the Mission tab.</b> Pack the right equipment within the weight limit and try to survive.</li></ol><button class="btn" id="startb">Start exploring</button><p class="fn">Best on desktop Chrome. Scientific values are pulled directly from the mission database.</p></div></div>
+<div id="load"><h1>Astro<span>voyage</span></h1><div id="lbar"><div id="lb"></div></div><small id="lt" style="color:var(--mut)">Loading planetary telemetry...</small></div><div id="sym"></div><div id="entry"></div><div id="cred">Data: NASA Planetary Fact Sheet & Supabase · Textures: Planet Pixel Emporium (via threex.planets), three.js examples</div>
+<div id="intro"><div class="glass"><h1>Astro<span>voyage</span></h1><p>Fly across the solar system, land on a planet and find out whether a human could survive there.</p><ol><li><b>Click a planet.</b> See its temperature, gravity, atmosphere, water, radiation, what you would see, and whether life could exist.</li><li><b>Land and walk.</b> Use W A S D, Shift and Space. Then remove your protection to feel how fast the environment kills you.</li><li><b>Take the Mission tab.</b> Pack the right equipment within the weight limit and try to survive.</li></ol><button class="btn" id="startb">Start exploring</button><p class="fn">Best on desktop Chrome. Scientific values are approximate and vary by location and altitude.</p></div></div>
 <div id="small"><h2 class="d">Please open this on a desktop screen</h2></div>
 
 <script>window.onerror=function(m,u,l){var d=document.createElement('div');d.style.cssText='position:fixed;left:260px;right:20px;top:70px;z-index:99;background:#400;color:#fff;padding:12px;border-radius:10px;font:13px monospace';d.textContent='Error: '+m+' (line '+l+'). If three.js failed to load, check your internet connection.';document.body.appendChild(d)};</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ============ PLANET DATA (Defaults / Visuals) ============ */
+/* ============ FALLBACK PLANET DATA ============ */
 const P=[
-{n:'Mercury',r:.9,d:16,s:.9,c:['#4a4540','#8c857b','#b9b1a5'],ty:'rock',atm:null,tag:'The extreme-temperature world: a grey, cratered rock under a black sky.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:15,v:'',eq:['Pressurised living space and oxygen supply','Carbon-dioxide removal and thermal regulation','Radiation protection and dependable power'],gt:'Theoretically possible in an advanced sealed habitat.',see:'A grey, rocky landscape covered in craters. The sky is black even in daytime.',life:[1,'No life detected','Mercury’s exposed surface is extremely hostile to known life.'],ch:{t:'Beat the Temperature Extremes',m:'Explore a cratered region and return to a protected habitat.',h:'Vacuum, solar radiation and extreme temperature differences.',w:'You collected a scientific sample and returned with every critical system working.'},need:['suit','therm','rad','power'],opts:['suit','therm','rad','power','water','comms'],env:{top:'#000',hor:'#000',g1:'#5e5851',g2:'#9a9288',amp:14,fd:0,sun:2.6,si:2.8,stars:1,cr:70,g:.38}},
-{n:'Venus',r:1.7,d:23,s:.7,c:['#8a5a22','#cf9a48','#efd08c'],ty:'band',atm:'#ffb55a',tag:'The crushing-pressure world, hidden under thick clouds.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:3,v:'',eq:['Exceptionally heat- and pressure-resistant habitat','Advanced cooling and a complete life-support system'],gt:'Surface survival needs extreme engineering.',see:'A rocky landscape under a hazy, orange-tinted sky with heavily filtered sunlight.',life:[2,'No life confirmed','The surface is extremely hostile to known life.'],ch:{t:'Survive the Venusian Environment',m:'Investigate Venus and collect atmospheric data.',h:'Extreme surface heat, crushing pressure and corrosive cloud chemistry.',w:'You completed the data-collection mission.'},need:['hull','therm','power','comms'],opts:['hull','therm','power','comms','suit','food'],env:{top:'#a0601c',hor:'#d89a4a',g1:'#6e4318',g2:'#b27a38',amp:10,fd:.0065,sun:0,si:.6,dust:1,dc:'#e8b46c',flash:1,g:.9}},
-{n:'Earth',r:1.8,d:31,s:.55,c:['#0b2f6e','#2f7a3a','#8a7242'],ty:'earth',atm:'#5aa5ff',tag:'The life-supporting world.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:null,v:'',eq:['Safe food and drinkable water','Shelter and suitable clothing'],gt:'A full lifetime, given safe food, water and shelter.',see:'Blue skies, white clouds, oceans, mountains, forests, deserts.',life:[5,'Life exists here','Life is found throughout Earth.'],ch:{t:'Find a Safe Environment',m:'Reach a safe location during a simulated environmental emergency.',h:'Severe weather, cold, heat or a shortage of drinkable water.',w:'You reached safety and completed the survival checklist.'},need:['shelter','water','food','warm'],opts:['shelter','water','food','warm','comms','suit'],env:{top:'#3b7ed6',hor:'#bcd9f2',g1:'#3c6b33',g2:'#7b6b46',amp:34,fd:.0012,sun:1,si:2.2,ocean:1,trees:1,clouds:'rgba(255,255,255,.5)',g:1}},
-{n:'Mars',r:1.2,d:40,s:.45,c:['#5a2610','#b5502a','#e0a272'],ty:'rock',atm:'#e08a5a',tag:'The human-exploration challenge: a cold, dusty desert.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:15,v:'',eq:['Pressurised habitat and oxygen supply','Carbon-dioxide removal and thermal control','Radiation shielding','Water extraction or recycling, and food supplies'],gt:'Potentially possible inside a properly engineered habitat.',see:'A rusty red, dusty landscape with craters, rocks, valleys and enormous volcanoes.',life:[3,'Unresolved','Ancient Mars had rivers, lakes and environments that may have suited microbes.'],ch:{t:'The 24-Hour Mars Expedition',m:'Explore a Martian crater, secure a water resource and return to the habitat.',h:'Low pressure, no breathable air, cold, radiation and limited resources.',w:'You completed the expedition, secured the sample and returned.'},need:['suit','therm','rad','power','water','shelter'],opts:['suit','therm','rad','power','water','shelter','comms','food'],env:{top:'#a8694a',hor:'#e0a07a',g1:'#8a4325',g2:'#c27a4a',amp:18,fd:.0032,sun:.65,si:1.5,dust:1,dc:'#d9a07a',wind:[7,0,2],cr:30,clouds:'rgba(235,190,150,.22)',g:.38}},
-{n:'Jupiter',r:5,d:62,s:.25,c:['#7a5030','#c9a27a','#f0e2c8'],ty:'band',atm:'#e8c89a',tag:'The giant planet without solid ground.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:12,v:'',eq:['Floating atmospheric habitat','Buoyancy, life support and reliable power'],gt:'Only speculative.',see:'Broad cream, brown, white and orange cloud bands and enormous storms.',life:[1,'No life detected','Any hypothetical floating organisms would face major challenges.'],ch:{t:'The Atmospheric Descent Mission',m:'Collect atmospheric measurements.',h:'Intense radiation, rising pressure, increasing temperature and storms.',w:'You collected and transmitted the data.'},need:['hull','rad','power','comms'],opts:['hull','rad','power','comms','suit','float'],env:{top:'#79502f',hor:'#d7b48a',g1:'#e0cdac',g2:'#b08558',amp:1.6,fd:.011,sun:.2,si:1,deck:1,dust:1,dc:'#f2e0c4',flash:1,wind:[14,0,3],g:2.36}},
-{n:'Saturn',r:4.3,d:82,s:.2,c:['#a89060','#d8c08a','#f2e5bd'],ty:'band',atm:'#f0dcaa',tag:'The ringed giant.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:12,v:'',eq:['A floating aerostat','Sealed oxygen supply and heating'],gt:'Hypothetical: hours to days in an aerostat.',see:'Pale golden cloud bands under a hazy sky.',life:[1,'No life detected','The planet itself is hostile.'],ch:{t:'Float in the Golden Clouds',m:'Hold position in a floating platform.',h:'Fierce winds, extreme cold and no oxygen.',w:'You kept the platform stable.'},need:['float','therm','power','comms'],opts:['float','therm','power','comms','suit','water'],env:{top:'#9a8250',hor:'#e6d3a3',g1:'#ecdcb0',g2:'#c5ad7a',amp:1.5,fd:.01,sun:.1,si:.9,deck:1,dust:1,dc:'#f4e8c8',wind:[16,0,2],g:1.07}},
-{n:'Uranus',r:2.8,d:100,s:.14,c:['#4fa5b0','#7ad9e0','#c4f4f4'],ty:'band',atm:'#8be8ee',tag:'An ice giant that spins on its side.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:10,v:'',eq:['Aerostat habitat with strong heating'],gt:'Hypothetical: hours in an aerostat.',see:'A calm cyan-blue haze with almost no visible features.',life:[1,'No life detected','Frozen, dark and chemically harsh.'],ch:{t:'Survive the Ice Giant',m:'Hold a platform in the cold clouds.',h:'Extreme cold and no oxygen.',w:'You kept the platform warm.'},need:['float','therm','power','comms'],opts:['float','therm','power','comms','suit','water'],env:{top:'#3f8f9a',hor:'#9fe0e6',g1:'#c0f0f2',g2:'#80cad2',amp:1.4,fd:.012,sun:.05,si:.8,deck:1,dust:1,dc:'#d8f6f8',wind:[10,0,2],g:.89}},
-{n:'Neptune',r:2.7,d:116,s:.11,c:['#1a3396','#3d63e0','#8fb0ff'],ty:'band',atm:'#6c92ff',tag:'The windiest world.',t:'',p:'',a:'',gr:'',w:'',rad:'',tt:10,v:'',eq:['Heavily reinforced aerostat'],gt:'Hypothetical: hours in an aerostat.',see:'Deep blue skies streaked with bright white methane clouds.',life:[1,'No life detected','Extreme cold and winds with no stable surface.'],ch:{t:'Ride the Fastest Winds',m:'Keep a platform aloft and gather data.',h:'Supersonic winds, extreme cold.',w:'You kept the platform aloft.'},need:['float','therm','power','comms'],opts:['float','therm','power','comms','suit','water'],env:{top:'#1b3a9a',hor:'#5f86e8',g1:'#7898f0',g2:'#3d5fd0',amp:1.4,fd:.012,sun:.04,si:.8,deck:1,dust:1,dc:'#c8d8ff',wind:[18,0,2],g:1.14}}];
+{n:'Mercury',r:.9,d:16,s:.9,c:['#4a4540','#8c857b','#b9b1a5'],ty:'rock',atm:null,tag:'The extreme-temperature world: a grey, cratered rock under a black sky.',t:'Avg ≈167 °C · day 430 °C · night −180 °C',p:'Almost a vacuum',a:'Extremely thin exosphere, no breathable air',gr:'0.38 g (3.7 m/s²)',w:'Ice may exist in shadowed polar craters',rad:'Strong solar radiation, little shielding',tt:15,v:'No breathable air, practically no pressure, and extreme temperature and radiation hazards. An unprotected person could not survive.',eq:['Pressurised living space and oxygen supply','Carbon-dioxide removal and thermal regulation','Radiation protection and dependable power','Water recycling, food and emergency backups'],gt:'Theoretically possible in an advanced sealed habitat. A spacesuit alone would not solve a prolonged mission.',see:'A grey, rocky landscape covered in craters, a little like Earth’s Moon. The sky is black even in daytime because there is almost no air to scatter sunlight. The Sun looks larger than from Earth. Sunlit ground is scorching while shadowed areas stay extremely cold. There are no clouds, rain or weather.',life:[1,'No life detected','Mercury’s exposed surface is extremely hostile to known life. Water ice in permanently shadowed craters is scientifically interesting, but ice alone does not prove life exists.'],ch:{t:'Beat the Temperature Extremes',m:'Explore a cratered region and return to a protected habitat.',h:'Vacuum, solar radiation and extreme temperature differences.',w:'You collected a scientific sample and returned with every critical system working.'},need:['suit','therm','rad','power'],opts:['suit','therm','rad','power','water','comms'],env:{top:'#000',hor:'#000',g1:'#5e5851',g2:'#9a9288',amp:14,fd:0,sun:2.6,si:2.8,stars:1,cr:70,g:.38}},
+{n:'Venus',r:1.7,d:23,s:.7,c:['#8a5a22','#cf9a48','#efd08c'],ty:'band',atm:'#ffb55a',tag:'The crushing-pressure world, hidden under thick clouds.',t:'≈ 464 °C average',p:'≈ 92× Earth’s sea-level pressure',a:'Mostly CO₂, nitrogen, sulfuric-acid cloud droplets',gr:'0.90 g (8.9 m/s²)',w:'No known accessible surface liquid water',rad:'Thick air blocks much radiation, but it is not safe',tt:3,v:'Extreme heat, crushing pressure and an unbreathable atmosphere make the surface unsurvivable without protection.',eq:['Exceptionally heat- and pressure-resistant habitat','Advanced cooling and a complete life-support system','A normal spacesuit is not sufficient','Hypothetical: a floating habitat in the upper atmosphere, where temperature and pressure are more Earth-like'],gt:'Surface survival needs extreme engineering. A floating upper-atmosphere habitat remains hypothetical.',see:'From space, Venus looks bright and almost featureless because thick clouds hide the surface. On the ground, spacecraft images show a rocky landscape under a hazy, orange-tinted sky with heavily filtered sunlight. The pressure is like being deep underwater on Earth.',life:[2,'No life confirmed','The surface is extremely hostile to known life. Scientists have discussed whether some cloud layers might be more favourable, but sulfuric acid and limited water make this an unresolved question.'],ch:{t:'Survive the Venusian Environment',m:'Investigate Venus and collect atmospheric data.',h:'Extreme surface heat, crushing pressure and corrosive cloud chemistry.',w:'You completed the data-collection mission without exceeding the platform’s operating limits.'},need:['hull','therm','power','comms'],opts:['hull','therm','power','comms','suit','food'],env:{top:'#a0601c',hor:'#d89a4a',g1:'#6e4318',g2:'#b27a38',amp:10,fd:.0065,sun:0,si:.6,dust:1,dc:'#e8b46c',flash:1,g:.9}},
+{n:'Earth',r:1.8,d:31,s:.55,c:['#0b2f6e','#2f7a3a','#8a7242'],ty:'earth',atm:'#5aa5ff',tag:'The life-supporting world.',t:'≈ 15 °C global average',p:'≈ 1 bar at sea level',a:'≈ 78% nitrogen, 21% oxygen',gr:'1.00 g (9.8 m/s²)',w:'Abundant liquid water in oceans, rivers and lakes',rad:'Atmosphere and magnetic field give strong protection',tt:null,v:'Humans can breathe the air and access liquid water in many ordinary environments. Deserts, polar regions, deep oceans and storms still need specialised equipment.',eq:['Safe food and drinkable water','Shelter and suitable clothing','Specialised gear for deserts, polar regions, deep oceans and severe storms'],gt:'A full lifetime, given safe food, water and shelter.',see:'Blue skies, white clouds, oceans, mountains, forests, deserts and many other landscapes. At night, stars, planets and the Milky Way appear when light pollution is low.',life:[5,'Life exists here','Life is found throughout Earth: microbes, plants, fungi and animals, from oceans and forests to hot springs and polar regions.'],ch:{t:'Find a Safe Environment',m:'Reach a safe location during a simulated environmental emergency.',h:'Severe weather, cold, heat or a shortage of drinkable water.',w:'You reached safety and completed the survival checklist.'},need:['shelter','water','food','warm'],opts:['shelter','water','food','warm','comms','suit'],env:{top:'#3b7ed6',hor:'#bcd9f2',g1:'#3c6b33',g2:'#7b6b46',amp:34,fd:.0012,sun:1,si:2.2,ocean:1,trees:1,clouds:'rgba(255,255,255,.5)',g:1}},
+{n:'Mars',r:1.2,d:40,s:.45,c:['#5a2610','#b5502a','#e0a272'],ty:'rock',atm:'#e08a5a',tag:'The human-exploration challenge: a cold, dusty desert.',t:'≈ −65 °C average',p:'Roughly 0.6% of Earth’s sea level',a:'Mostly CO₂, extremely thin',gr:'0.38 g (3.7 m/s²)',w:'Polar and underground ice; liquid water is hard to keep',rad:'Higher than Earth: thin air, no strong magnetic field',tt:15,v:'The atmosphere has no breathable oxygen and cannot hold safe pressure. Cold and radiation add further risks. An unprotected human could not survive.',eq:['Pressurised habitat and oxygen supply','Carbon-dioxide removal and thermal control','Radiation shielding','Water extraction or recycling, and food supplies','Reliable power, dust protection and emergency backups'],gt:'Potentially possible inside a properly engineered habitat. This is a future goal, not an established settlement.',see:'A rusty red, dusty landscape with craters, rocks, valleys and enormous volcanoes. The sky is often tan, butterscotch or dusty pink, with a bluish glow around the Sun at sunrise and sunset. The Sun looks smaller than from Earth, dust storms can cover large regions, and you would weigh about 38% of your Earth weight.',life:[3,'Unresolved','Ancient Mars had rivers, lakes and environments that may have suited microbes. Scientists investigate whether past or protected underground environments supported life. Nothing is confirmed.'],ch:{t:'The 24-Hour Mars Expedition',m:'Explore a Martian crater, secure a water resource and return to the habitat.',h:'Low pressure, no breathable air, cold, radiation and limited resources.',w:'You completed the expedition, secured the sample and returned with all critical systems operating.'},need:['suit','therm','rad','power','water','shelter'],opts:['suit','therm','rad','power','water','shelter','comms','food'],env:{top:'#a8694a',hor:'#e0a07a',g1:'#8a4325',g2:'#c27a4a',amp:18,fd:.0032,sun:.65,si:1.5,dust:1,dc:'#d9a07a',wind:[7,0,2],cr:30,clouds:'rgba(235,190,150,.22)',g:.38}},
+{n:'Jupiter',r:5,d:62,s:.25,c:['#7a5030','#c9a27a','#f0e2c8'],ty:'band',atm:'#e8c89a',tag:'The giant planet without solid ground.',t:'≈ −110 °C at reference level (hotter deeper)',p:'Rises rapidly with depth',a:'Mostly hydrogen and helium',gr:'2.36 g (23.1 m/s²) at reference level',w:'Water vapour and clouds only; no surface reservoir',rad:'Extremely intense radiation belts',tt:12,v:'No breathable atmosphere, no conventional solid surface and a hazardous radiation environment. Descending exposes you to ever more severe pressure and temperature.',eq:['Floating atmospheric habitat (speculative, not an established capability)','Buoyancy, life support and reliable power','Radiation protection and storm protection','Robotic exploration is the realistic mission'],gt:'Only speculative. A robotic probe is the realistic way to explore Jupiter.',see:'From space: broad cream, brown, white and orange cloud bands and enormous storms such as the Great Red Spot. During a descent, clouds surround you, visibility worsens and pressure and temperature climb. There is no normal ground to stand on.',life:[1,'No life detected','Scientists study Jupiter’s atmospheric chemistry and energy sources, but these do not establish that life exists. Any hypothetical floating organisms would face major challenges.'],ch:{t:'The Atmospheric Descent Mission',m:'Collect atmospheric measurements and transmit them to an orbiting spacecraft. (Designed for a robotic probe, not an unprotected human.)',h:'Intense radiation, rising pressure, increasing temperature and storms.',w:'You collected and transmitted the data before the probe exceeded its limits.'},need:['hull','rad','power','comms'],opts:['hull','rad','power','comms','suit','float'],env:{top:'#79502f',hor:'#d7b48a',g1:'#e0cdac',g2:'#b08558',amp:1.6,fd:.011,sun:.2,si:1,deck:1,dust:1,dc:'#f2e0c4',flash:1,wind:[14,0,3],g:2.36}},
+{n:'Saturn',r:4.3,d:82,s:.2,c:['#a89060','#d8c08a','#f2e5bd'],ty:'band',atm:'#f0dcaa',tag:'The ringed giant, a gas giant with no solid surface.',t:'≈ −140 °C at the 1-bar level',p:'Rises without limit with depth',a:'Mostly hydrogen and helium',gr:'0.92 g (9.0 m/s²)',w:'Ring ice and frozen moons',rad:'Moderate radiation belts',tt:12,v:'No ground, no oxygen and winds above 1,800 km/h. Unprotected, you lose consciousness within seconds.',eq:['A floating aerostat at a milder cloud depth','Sealed oxygen supply and heating','Hull reinforced against 1,800 km/h winds'],gt:'Hypothetical: hours to days in an aerostat.',see:'Pale golden cloud bands under a hazy sky. The Sun is a tiny bright star.',life:[1,'No life detected','The planet itself is hostile. Its moon Enceladus has a hidden ocean, which is a much better place to look.'],ch:{t:'Float in the Golden Clouds',m:'Hold position in a floating platform and gather data.',h:'Fierce winds, extreme cold and no oxygen.',w:'You kept the platform stable and warm until the data was sent.'},need:['float','therm','power','comms'],opts:['float','therm','power','comms','suit','water'],env:{top:'#9a8250',hor:'#e6d3a3',g1:'#ecdcb0',g2:'#c5ad7a',amp:1.5,fd:.01,sun:.1,si:.9,deck:1,dust:1,dc:'#f4e8c8',wind:[16,0,2],g:.92}},
+{n:'Uranus',r:2.8,d:100,s:.14,c:['#4fa5b0','#7ad9e0','#c4f4f4'],ty:'band',atm:'#8be8ee',tag:'An ice giant that spins on its side.',t:'≈ −195 °C at the 1-bar level',p:'Rises without limit with depth',a:'Hydrogen, helium, methane',gr:'0.89 g (8.7 m/s²)',w:'Icy water-ammonia interior',rad:'Low',tt:10,v:'It is colder than liquid air and there is nothing to breathe.',eq:['Aerostat habitat with strong heating','Sealed oxygen and insulation'],gt:'Hypothetical: hours in an aerostat.',see:'A calm cyan-blue haze with almost no visible features. The Sun is a bright star.',life:[1,'No life detected','Frozen, dark and chemically harsh. No known environment suitable for life.'],ch:{t:'Survive the Ice Giant',m:'Hold a platform in the cold clouds and gather data.',h:'Extreme cold and no oxygen.',w:'You kept the platform warm and powered until the data was sent.'},need:['float','therm','power','comms'],opts:['float','therm','power','comms','suit','water'],env:{top:'#3f8f9a',hor:'#9fe0e6',g1:'#c0f0f2',g2:'#80cad2',amp:1.4,fd:.012,sun:.05,si:.8,deck:1,dust:1,dc:'#d8f6f8',wind:[10,0,2],g:.89}},
+{n:'Neptune',r:2.7,d:116,s:.11,c:['#1a3396','#3d63e0','#8fb0ff'],ty:'band',atm:'#6c92ff',tag:'The windiest world, with storms near 2,000 km/h.',t:'≈ −200 °C at the 1-bar level',p:'Rises without limit with depth',a:'Hydrogen, helium, methane',gr:'1.12 g (11.0 m/s²)',w:'Icy water-ammonia interior',rad:'Low',tt:10,v:'Deep cold, supersonic winds and no oxygen mean you survive only seconds.',eq:['Heavily reinforced aerostat','Heating and sealed oxygen'],gt:'Hypothetical: hours in an aerostat.',see:'Deep blue skies streaked with bright white methane clouds and fast-moving storms.',life:[1,'No life detected','Extreme cold and winds with no stable surface. Its moon Triton is the more interesting target.'],ch:{t:'Ride the Fastest Winds',m:'Keep a platform aloft and gather data.',h:'Supersonic winds, extreme cold.',w:'You kept the platform aloft and sent the data.'},need:['float','therm','power','comms'],opts:['float','therm','power','comms','suit','water'],env:{top:'#1b3a9a',hor:'#5f86e8',g1:'#7898f0',g2:'#3d5fd0',amp:1.4,fd:.012,sun:.04,si:.8,deck:1,dust:1,dc:'#c8d8ff',wind:[18,0,2],g:1.12}}];
 
-const G={suit:{l:'Pressurised suit + oxygen',w:15,f:'You had no sealed pressurised suit and oxygen supply.'},therm:{l:'Thermal control',w:12,f:'Thermal control was missing.'},rad:{l:'Radiation shielding',w:14,f:'Radiation shielding was inadequate.'},power:{l:'Reliable power + backups',w:18,f:'Power failed.'},water:{l:'Water extraction',w:10,f:'Water reserves ran out.'},hull:{l:'Pressure- and heat-resistant hull',w:25,f:'The hull was crushed.'},float:{l:'Buoyant atmospheric platform',w:22,f:'The craft sank.'},comms:{l:'Communications relay',w:6,f:'Communications were lost.'},shelter:{l:'Sealed habitat',w:20,f:'There was no shelter.'},food:{l:'Food supply',w:8,f:'Food supplies ran out.'},warm:{l:'Warm weather clothing',w:4,f:'Exposure to the cold caused hypothermia.'}};
+const G={suit:{l:'Pressurised suit + oxygen',w:15,f:'You had no sealed pressurised suit and oxygen supply, so you lost consciousness within seconds.'},therm:{l:'Thermal control (heating and cooling)',w:12,f:'Thermal control was missing: temperature extremes overwhelmed the systems.'},rad:{l:'Radiation shielding',w:14,f:'Radiation shielding was inadequate and the dose limit was exceeded.'},power:{l:'Reliable power + backups',w:18,f:'Power failed, shutting down life support and the electronics.'},water:{l:'Water extraction and recycling',w:10,f:'Water reserves ran out before the mission ended.'},hull:{l:'Pressure- and heat-resistant hull',w:25,f:'The hull was crushed or overheated: pressure and heat exceeded its limits.'},float:{l:'Buoyant atmospheric platform',w:22,f:'Without a buoyant platform the craft sank into deeper, crushing layers.'},comms:{l:'Communications relay',w:6,f:'Communications were lost, so the data was never transmitted.'},shelter:{l:'Sealed habitat / shelter',w:20,f:'There was no shelter that could hold a safe pressure and temperature.'},food:{l:'Food supply',w:8,f:'Food supplies ran out before the mission ended.'},warm:{l:'Warm weather clothing',w:4,f:'Exposure to the cold without proper clothing caused hypothermia.'}};
 
-/* ============ SUPABASE INTEGRATION ============ */
-// Initialize Supabase
+/* ============ SUPABASE FETCH & FALLBACK ============ */
 const supabaseUrl = 'https://wfbkaimlerlrjdchdzt.supabase.co';
-// ⚠️ IMPORTANT: PASTE YOUR FULL ANON KEY BELOW. DO NOT USE THE TRUNCATED ONE.
-const supabaseKey = 'YOUR_SUPABASE_ANON_KEY_HERE'; 
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmYmthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg2NzQwNjAsImV4cCI6MjAzNDI1MDA2MH0.your_full_key_goes_here'; // PASTE YOUR KEY HERE
+let supabaseClient = null;
+
+try { supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey); } catch(e) { console.warn("Supabase init failed."); }
 
 async function loadPlanetData() {
-  const { data, error } = await supabase.from('bodies').select('*');
-  if (error) {
-    console.error("Supabase error:", error);
-    document.getElementById('hint').textContent = "Failed to load data from database.";
-    return;
-  }
-
-  data.forEach(dbPlanet => {
-    // Find the matching visual template in the P array
-    const uiPlanet = P.find(p => p.n === dbPlanet.name);
-    if (uiPlanet) {
-      // Overwrite stats with exact Supabase data
-      if (dbPlanet.avg_temp_c !== null) uiPlanet.t = `${dbPlanet.avg_temp_c} °C`;
-      if (dbPlanet.pressure_atm !== null) uiPlanet.p = `${dbPlanet.pressure_atm} atm`;
-      if (dbPlanet.atmosphere) uiPlanet.a = dbPlanet.atmosphere;
-      if (dbPlanet.gravity_ms2 !== null) uiPlanet.gr = `${dbPlanet.gravity_ms2} m/s²`;
-      if (dbPlanet.water) uiPlanet.w = dbPlanet.water;
-      if (dbPlanet.radiation_msv !== null) uiPlanet.rad = `${dbPlanet.radiation_msv} mSv/yr`;
+  if(supabaseClient) {
+    try {
+      const { data, error } = await supabaseClient.from('bodies').select('*');
+      if (error) throw error;
       
-      // Survival simulation data
-      if (dbPlanet.survival_json) {
-        if (dbPlanet.survival_json.unprotectedDeathSeconds !== undefined) {
-          uiPlanet.tt = dbPlanet.survival_json.unprotectedDeathSeconds;
-        }
-        if (dbPlanet.survival_json.causeOfDeath) {
-          uiPlanet.v = dbPlanet.survival_json.causeOfDeath;
-        }
-      }
+      if (data && data.length > 0) {
+        data.forEach(dbPlanet => {
+          const uiPlanet = P.find(p => p.n === dbPlanet.name);
+          if (uiPlanet) {
+            if (dbPlanet.avg_temp_c !== null) uiPlanet.t = `${dbPlanet.avg_temp_c} °C`;
+            if (dbPlanet.pressure_atm !== null) uiPlanet.p = `${dbPlanet.pressure_atm} bar`;
+            if (dbPlanet.atmosphere) uiPlanet.a = dbPlanet.atmosphere;
+            if (dbPlanet.gravity_ms2 !== null) uiPlanet.gr = `${dbPlanet.gravity_ms2} m/s²`;
+            if (dbPlanet.water) uiPlanet.w = dbPlanet.water;
+            if (dbPlanet.radiation_msv !== null) uiPlanet.rad = `${dbPlanet.radiation_msv} mSv/yr`;
+            
+            if (dbPlanet.survival_json) {
+              if (dbPlanet.survival_json.unprotectedDeathSeconds !== undefined) {
+                uiPlanet.tt = dbPlanet.survival_json.unprotectedDeathSeconds;
+              }
+              if (dbPlanet.survival_json.causeOfDeath) {
+                uiPlanet.v = dbPlanet.survival_json.causeOfDeath;
+              }
+            }
+          }
+        });
+        document.getElementById('hint').innerHTML = '<span style="color:var(--ok)">●</span> LIVE DATABASE UPLINK · Click a planet';
+      } else { throw new Error("Empty database"); }
+    } catch (err) {
+      console.warn("Database failed/empty. Using Local Atlas Data.", err);
+      document.getElementById('hint').innerHTML = '<span style="color:var(--acc)">●</span> LOCAL ATLAS MODE · Click a planet';
     }
-  });
-
-  // Hide intro, update hint, and start the 3D scene
-  document.getElementById('hint').textContent = "Drag to rotate · scroll to zoom · click a planet to fly there";
+  } else {
+    document.getElementById('hint').innerHTML = '<span style="color:var(--acc)">●</span> LOCAL ATLAS MODE · Click a planet';
+  }
+  
+  document.getElementById('load').style.opacity = 0;
+  setTimeout(() => document.getElementById('load').style.display = 'none', 650);
   document.getElementById('intro').style.display = 'flex';
   document.getElementById('startb').onclick = () => document.getElementById('intro').style.display = 'none';
   
@@ -151,7 +166,7 @@ function glow(col,sz){const k=document.createElement('canvas');k.width=k.height=
  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(k),blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,fog:false}));s.scale.set(sz,sz,1);return s}
 function atmo(r,col){return new THREE.Mesh(new THREE.SphereGeometry(r*1.13,48,48),new THREE.ShaderMaterial({uniforms:{c:{value:new THREE.Color(col)}},vertexShader:'varying vec3 n;void main(){n=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'varying vec3 n;uniform vec3 c;void main(){float i=pow(max(.0,.74-dot(n,vec3(0.,0.,1.))),3.);gl_FragColor=vec4(c*i*1.8,i);}',side:THREE.BackSide,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false}))}
 
-/* ============ INITIALIZE APP (Called after data loads) ============ */
+/* ============ INITIALIZE 3D APP ============ */
 function initApp() {
  const cv=document.getElementById('c'),R=new THREE.WebGLRenderer({canvas:cv,antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,2));
  const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(55,1,.1,4000);
@@ -159,18 +174,28 @@ function initApp() {
  const sys=new THREE.Group(),surf=new THREE.Group();scene.add(sys,surf);surf.visible=false;
  const sun=new THREE.Mesh(new THREE.SphereGeometry(6,64,64),new THREE.MeshBasicMaterial({map:mkTex('rock',['#e8620a','#ffa51f','#fff1a8'])}));
  sys.add(sun,glow('rgba(255,190,90,.95)',40),glow('rgba(255,150,60,.35)',120));
+ const TL=new THREE.TextureLoader();TL.setCrossOrigin('anonymous');
+ const TB='https://cdn.jsdelivr.net/gh/jeromeetienne/threex.planets@master/images/',T3='https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/';
+ const TX={Mercury:[TB+'mercurymap.jpg',TB+'mercurybump.jpg'],Venus:[TB+'venusmap.jpg'],Earth:[T3+'earth_atmos_2048.jpg'],Mars:[TB+'marsmap1k.jpg',TB+'marsbump1k.jpg'],Jupiter:[TB+'jupitermap.jpg'],Saturn:[TB+'saturnmap.jpg'],Uranus:[TB+'uranusmap.jpg'],Neptune:[TB+'neptunemap.jpg']};
+ let tTot=0,tDone=0;
+ function prog(){tDone++;const b=document.getElementById('lb');if(b)b.style.width=Math.max(8,Math.round(tDone/tTot*100))+'%';if(tDone>=tTot)setTimeout(()=>{document.getElementById('load').style.opacity=0;setTimeout(()=>document.getElementById('load').style.display='none',650)},300)}
+ function loadURL(u,cb){tTot++;TL.load(u,t=>{try{cb(t)}catch(e){}prog()},undefined,()=>prog())}
+ function loadReal(p){const u=TX[p.n];if(u){loadURL(u[0],t=>{p.mat.map=t;p.mat.bumpMap=p.rb||null;p.mat.needsUpdate=true});if(u[1])loadURL(u[1],t=>{p.rb=t;p.mat.bumpMap=t;p.mat.bumpScale=p.n=='Mars'?3:2;p.mat.needsUpdate=true})}
+  if(p.cm)loadURL(T3+'earth_clouds_1024.png',t=>{p.cm.material.map=t;p.cm.material.needsUpdate=true})}
  const orbits=[],rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
  P.forEach((p,i)=>{
   const map=mkTex(p.ty,p.c),mat=new THREE.MeshStandardMaterial({map:map,roughness:.92,metalness:0});if(p.ty=='rock'){mat.bumpMap=map;mat.bumpScale=.9}
   const m=new THREE.Mesh(new THREE.SphereGeometry(p.r,64,64),mat);m.userData.i=i;p.a0=Math.random()*6.28;sys.add(m);p.m=m;
   if(p.atm)m.add(atmo(p.r,p.atm));
-  if(p.n=='Earth')m.add(new THREE.Mesh(new THREE.SphereGeometry(p.r*1.015,48,48),new THREE.MeshStandardMaterial({map:mkTex('',[],true),transparent:true,depthWrite:false})));
+  if(p.n=='Earth'){p.cm=new THREE.Mesh(new THREE.SphereGeometry(p.r*1.015,48,48),new THREE.MeshStandardMaterial({map:mkTex('',[],true),transparent:true,depthWrite:false}));m.add(p.cm)}
   const o=new THREE.Mesh(new THREE.RingGeometry(p.d-.07,p.d+.07,200),new THREE.MeshBasicMaterial({color:0x7d98d8,transparent:true,opacity:.2,side:THREE.DoubleSide}));o.rotation.x=Math.PI/2;sys.add(o);orbits.push(o);
   if(p.n=='Saturn'){const a=p.r*1.35,b=p.r*2.4,g=new THREE.RingGeometry(a,b,128),pp=g.attributes.position,uv=g.attributes.uv,v=new THREE.Vector3();
    for(let k=0;k<pp.count;k++){v.fromBufferAttribute(pp,k);uv.setXY(k,(v.length()-a)/(b-a),.5)}
    const kc=document.createElement('canvas');kc.width=256;kc.height=4;const x=kc.getContext('2d');for(let k=0;k<256;k++){const al=(k>118&&k<126)?.05:.35+.5*Math.abs(Math.sin(k*.37)*Math.sin(k*.11));x.fillStyle='rgba(222,205,165,'+al+')';x.fillRect(k,0,1,4)}
    const rg=new THREE.Mesh(g,new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(kc),transparent:true,side:THREE.DoubleSide,depthWrite:false}));rg.rotation.x=Math.PI/2+.4;m.add(rg)}
+  p.mat=mat;loadReal(p)
  });
+ const moon=new THREE.Mesh(new THREE.SphereGeometry(.5,32,32),new THREE.MeshStandardMaterial({map:mkTex('rock',['#4a4a4a','#9a9a9a','#dcdcdc']),roughness:1}));sys.add(moon);loadURL(T3+'moon_1024.jpg',t=>{moon.material.map=t;moon.material.needsUpdate=true});
  {const a=[];for(let i=0;i<2200;i++){const t=Math.random()*6.283,r=46+Math.random()*9;a.push(Math.cos(t)*r,(Math.random()-.5)*1.4,Math.sin(t)*r)}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(a,3));sys.add(new THREE.Points(g,new THREE.PointsMaterial({size:1.2,color:0x9a9288,sizeAttenuation:false})))}
  const stars=(()=>{const a=[];for(let i=0;i<3000;i++){const u=Math.random()*2-1,t=Math.random()*6.2832,q=Math.sqrt(1-u*u),m=1000+Math.random()*600;a.push(q*Math.cos(t)*m,u*m,q*Math.sin(t)*m)}
@@ -217,42 +242,65 @@ function initApp() {
  $('tOrb').onclick=e=>{e.target.classList.toggle('on');const v=e.target.classList.contains('on');orbits.forEach(o=>o.visible=v)};
  $('tPause').onclick=e=>{pause=!pause;e.target.classList.toggle('on',pause);e.target.textContent=pause?'Resume orbits':'Pause orbits'};
 
- function select(i){st.mode='focus';st.sel=i;mark(i);const p=P[i];st.gr=p.r*4.6;st.gph=1.3;back.style.display='';back.textContent='All planets';hint.textContent='Drag to orbit '+p.n+' · scroll to zoom';ui(p)}
+ const seen=new Set();function select(i){st.mode='focus';st.sel=i;mark(i);seen.add(i);P[i].b.classList.add('seen');$('prog').textContent='Explored '+seen.size+'/8';const p=P[i];st.gr=p.r*4.6;st.gph=1.3;back.style.display='';back.textContent='All planets';hint.textContent='Explore the tabs, then land on '+p.n+' and try the Mission';ui(p)}
  function ui(p){panel.innerHTML='<div class="ph"><h2>'+p.n+'</h2><p>'+p.tag+'</p></div><div class="tabs">'+['Overview','Survival','Sights','Life','Mission'].map((t,i)=>'<button data-i="'+i+'" class="'+(i?'':'on')+'">'+t+'</button>').join('')+'</div><div class="tb" id="tb"></div><button class="btn" id="enter">'+(p.env.deck?'Descend into '+p.n+'’s clouds':'Land on '+p.n)+'</button>';
   const tb=$('tb'),safe=p.tt===null;
-  const tabs=[()=>'<div class="grid">'+[['Temperature',p.t],['Gravity',p.gr],['Atmosphere',p.a],['Water availability',p.w],['Radiation risk',p.rad],['Pressure',p.p]].map(x=>'<div class="st"><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('')+'</div><p class="fn">Conditions vary by location and altitude.</p>',
+  const tabs=[()=>over(p),
   ()=>'<div class="verd '+(safe?'ok':'bad')+'"><small>Could a human survive without special equipment?</small><div class="big">'+(safe?'Yes, in many places':'No: ≈ '+p.tt+' seconds')+'</div><p>'+p.v+'</p></div>'+(safe?'':'<p class="fn" style="margin-top:-6px">Survival time is an approximate simulation estimate.</p>')+'<h4>Could a human survive with equipment?</h4><p>'+p.gt+'</p><h4>Equipment you would need</h4><ul>'+p.eq.map(x=>'<li>'+x+'</li>').join('')+'</ul>',
   ()=>'<h4 style="margin-top:0">What you would see if you arrived</h4><p>'+p.see+'</p><p class="fn">Press the button below to stand there: walk, jump and look around.</p>',
-  ()=>'<h4 style="margin-top:0">Could life exist? '+p.life[1]+'</h4><div class="meter">'+[1,2,3,4,5].map(n=>'<i class="'+(n<=p.life[0]?'f':'')+'"></i>').join('')+'</div><p>'+p.life[2]+'</p><p class="fn">Habitability is not evidence of life.</p>',
+  ()=>'<h4 style="margin-top:0">Could life exist? '+p.life[1]+'</h4><div class="meter">'+[1,2,3,4,5].map(n=>'<i class="'+(n<=p.life[0]?'f':'')+'"></i>').join('')+'</div><p>'+p.life[2]+'</p><p class="fn">Habitability is not evidence of life. No extraterrestrial life has been confirmed, and any imagined alien life is hypothetical.</p>',
   ()=>chal(p,tb)];
   const show=i=>{const r=tabs[i]();if(typeof r=='string')tb.innerHTML=r;panel.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.i==i))};show(0);
   panel.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>show(+b.dataset.i));$('enter').onclick=()=>land(st.sel);panel.classList.add('open')}
+ const NUM={Mercury:{T:167,g:.38,P:0,r:5,w:1},Venus:{T:464,g:.9,P:92,r:2,w:0},Earth:{T:15,g:1,P:1,r:1,w:5},Mars:{T:-65,g:.38,P:.006,r:4,w:2},Jupiter:{T:-110,g:2.36,P:null,r:5,w:1},Saturn:{T:-140,g:.92,P:null,r:3,w:1},Uranus:{T:-195,g:.89,P:null,r:2,w:1},Neptune:{T:-200,g:1.12,P:null,r:2,w:1}};
+ function gg(l,txt,f,e){return '<div class="g"><div class="gh"><small>'+l+'</small><b>'+txt+'</b></div><div class="gb"><i style="width:'+Math.round(Math.max(0,Math.min(1,f))*100)+'%"></i><u style="left:'+Math.round(e*100)+'%" title="Earth"></u></div></div>'}
+ function over(p){const n=NUM[p.n],pf=v=>v==null||v<=0?0:(Math.log10(v)+3)/5;
+  return gg('Temperature',p.t,(n.T+220)/700,235/700)+gg('Gravity',p.gr,n.g/2.5,.4)+gg('Pressure',p.p,pf(n.P),pf(1))+gg('Water availability',p.w,n.w/5,1)+gg('Radiation risk',p.rad,n.r/5,.2)+'<div class="st"><small>Atmosphere</small><b>'+p.a+'</b></div><p class="fn">The white tick marks Earth for comparison. Conditions vary by location and altitude. Sources: NASA Planetary Fact Sheet and project science notes.</p>'}
  function chal(p,tb){const cap=p.need.reduce((s,k)=>s+G[k].w,0)+10,sel=new Set(),tot=()=>[...sel].reduce((s,k)=>s+G[k].w,0);
   tb.innerHTML='<div class="verd" style="border-color:var(--line);background:rgba(255,255,255,.04)"><small>Survival challenge</small><div class="big" style="font-size:22px;color:var(--txt)">'+p.ch.t+'</div><p>'+p.ch.m+'</p><p class="fn" style="margin-top:6px">Hazards: '+p.ch.h+'</p></div><h4 style="margin-top:0">Pack your gear <span id="ld"></span></h4><div id="gl"></div><button class="btn" id="go" style="margin-top:8px">Launch mission</button><div id="lg"></div>';
   const gl=tb.querySelector('#gl'),ld=tb.querySelector('#ld'),upd=()=>{ld.textContent='· '+tot()+' / '+cap+' kg';ld.style.color='var(--mut)'};
   p.opts.forEach(k=>{const l=document.createElement('label');l.className='gi';l.innerHTML='<input type="checkbox"><span>'+G[k].l+'</span><em>'+G[k].w+' kg</em>';const c=l.firstChild;
    c.onchange=()=>{if(c.checked){if(tot()+G[k].w>cap){c.checked=false;ld.textContent='· Over the weight limit';ld.style.color='var(--bad)';return}sel.add(k)}else sel.delete(k);upd()};gl.appendChild(l)});upd();
   tb.querySelector('#go').onclick=()=>{const lg=tb.querySelector('#lg');lg.innerHTML='';const miss=p.need.filter(k=>!sel.has(k)),lines=p.need.map(k=>[sel.has(k),sel.has(k)?G[k].l+': working':G[k].f]);
-   lines.forEach((x,i)=>setTimeout(()=>{const d=document.createElement('div');d.className='ln '+(x[0]?'ok':'no');d.textContent=x[1];lg.appendChild(d);if(i==lines.length-1)setTimeout(()=>{const f=document.createElement('div');f.className='verd '+(miss.length?'bad':'ok');f.style.marginTop='12px';f.innerHTML='<div class="big" style="font-size:24px">'+(miss.length?'Mission failed':'Mission complete')+'</div><p>'+(miss.length?miss.length+' critical system'+(miss.length>1?'s':'')+' missing. Try again.':p.ch.w)+'</p>';lg.appendChild(f)},450)},i*520))};
+   lines.forEach((x,i)=>setTimeout(()=>{const d=document.createElement('div');d.className='ln '+(x[0]?'ok':'no');d.textContent=x[1];lg.appendChild(d);if(i==lines.length-1)setTimeout(()=>{const f=document.createElement('div');f.className='verd '+(miss.length?'bad':'ok');f.style.marginTop='12px';if(!miss.length)p.b.classList.add('won');f.innerHTML='<div class="big" style="font-size:24px">'+(miss.length?'Mission failed':'Mission complete')+'</div><p>'+(miss.length?miss.length+' critical system'+(miss.length>1?'s':'')+' missing. Try again with a different loadout.':p.ch.w)+'</p>';lg.appendChild(f)},450)},i*520))};
   return 1}
 
- function land(i){const p=P[i];fade.style.opacity=1;setTimeout(()=>{buildSurface(p);st.mode='surf';sys.visible=false;stars.visible=!!env.stars;sunL.visible=false;amb.intensity=.04;surf.visible=true;scene.background=null;
+ function land(i){const p=P[i];if(st.mode=='surf')return;st.gr=p.r*1.18;$('entry').style.opacity=p.atm?1:0;panel.classList.remove('open');setTimeout(()=>land2(i),1700)}
+ function land2(i){const p=P[i];fade.style.opacity=1;setTimeout(()=>{buildSurface(p);st.mode='surf';sys.visible=false;stars.visible=!!env.stars;sunL.visible=false;amb.intensity=.04;surf.visible=true;scene.background=null;
    panel.classList.remove('open');rail.style.display='none';P.forEach(q=>q.l.style.display='none');$('tOrb').style.display=$('tPause').style.display='none';back.textContent='Leave '+p.n+' (Esc)';
    hint.textContent='W A S D to walk · Shift to run · Space to jump · drag to look around';st.yaw=0;st.pit=0;suit=p.tt!==null;left=p.tt||0;dead=false;$('dead').style.display='none';
-   hud.innerHTML='<h3>'+p.n+'</h3><div>Temperature<b>'+p.t.split(' · ')[0].split(' (')[0]+'</b></div><div>Gravity<b>'+p.gr+'</b></div><div>Pressure<b>'+p.p.split(' (')[0]+'</b></div><div>Air<b>'+p.a.split(',')[0]+'</b></div><div>Radiation<b>'+p.rad.split(',')[0]+'</b></div><h4 style="margin:12px 0 4px">Equipment needed</h4><ul style="font-size:12px;color:var(--mut);padding-left:16px">'+p.eq.map(x=>'<li>'+x+'</li>').join('')+'</ul>';hud.style.display='block';vitals();fade.style.opacity=0},750)}
- function vitals(){const p=P[st.sel];if(p.tt===null){vit.style.display='block';vit.innerHTML='<b>You are safe here</b><div style="color:var(--mut)">Breathable air and a mild climate. No equipment needed.</div>';visor.style.display='none';return}
+   hud.innerHTML='<h3>'+p.n+'</h3><div>Temperature<b>'+p.t.split(' · ')[0].split(' (')[0]+'</b></div><div>Gravity<b>'+p.gr+'</b></div><div>Pressure<b>'+p.p.split(' (')[0]+'</b></div><div>Air<b>'+p.a.split(',')[0]+'</b></div><div>Radiation<b>'+p.rad.split(',')[0]+'</b></div><h4 style="margin:12px 0 4px">Equipment needed</h4><ul style="font-size:12px;color:var(--mut);padding-left:16px">'+p.eq.map(x=>'<li>'+x+'</li>').join('')+'</ul>';hud.style.display='block';vitals();fade.style.opacity=0;$('entry').style.opacity=0},750)}
+ function vitals(){const p=P[st.sel];aWorld(p);if(suit){$('sym').innerHTML='';symK=0;cv.style.filter=''}if(p.tt===null){vit.style.display='block';vit.innerHTML='<b>You are safe here</b><div style="color:var(--mut)">Breathable air and a mild climate. No equipment needed.</div>';visor.style.display='none';return}
   vit.style.display='block';visor.style.display=suit?'block':'none';
   vit.innerHTML='<b>'+(suit?'Protection ON: you are safe':'No protection: exposure clock running')+'</b><div class="bar"><i id="vb" style="background:'+(suit?'var(--ok)':'var(--bad)')+'"></i></div><button class="pill" id="sw">'+(suit?'Remove protection and see what happens':'Put protection back on')+'</button>';
   $('sw').onclick=()=>{suit=!suit;if(suit){left=p.tt;vig.style.opacity=0}vitals()}}
  $('rs').onclick=()=>{dead=false;suit=true;left=P[st.sel].tt;$('dead').style.display='none';vig.style.opacity=0;vitals()};
- back.onclick=()=>{if(st.mode=='surf'){fade.style.opacity=1;setTimeout(()=>{st.mode='focus';surf.visible=false;sys.visible=true;stars.visible=true;stars.position.set(0,0,0);sunL.visible=true;amb.intensity=.32;scene.fog=null;hud.style.display=vit.style.display=visor.style.display='none';vig.style.opacity=0;$('dead').style.display='none';
+ back.onclick=()=>{if(st.mode=='surf'){aOff();$('sym').innerHTML='';cv.style.filter='';fade.style.opacity=1;setTimeout(()=>{st.mode='focus';surf.visible=false;sys.visible=true;stars.visible=true;stars.position.set(0,0,0);sunL.visible=true;amb.intensity=.32;scene.fog=null;hud.style.display=vit.style.display=visor.style.display='none';vig.style.opacity=0;$('dead').style.display='none';
    rail.style.display='';P.forEach(q=>q.l.style.display='');$('tOrb').style.display=$('tPause').style.display='';back.textContent='All planets';hint.textContent='Drag to orbit · scroll to zoom';panel.classList.add('open');fade.style.opacity=0},700);return}
   if(st.mode=='focus'){st.mode='sys';st.sel=-1;st.gt.set(0,0,0);st.gr=170;st.gph=1.05;panel.classList.remove('open');back.style.display='none';mark(-1);hint.textContent='Drag to rotate · scroll to zoom · click a planet to fly there'}};
 
+ /* ============ LOOP ============ */
+ let AC,wg,wf,dg,hg,mute=false,hb=0,symK=0;
+ const AUD={Mercury:[0,0],Venus:[.22,52],Earth:[.16,0],Mars:[.1,0],Jupiter:[.5,38],Saturn:[.38,0],Uranus:[.3,0],Neptune:[.45,0]};
+ const SYM={Mercury:['There is no air to breathe: your lungs cannot draw oxygen.','Moisture on your tongue begins to boil in the vacuum.','The Sun’s glare scorches exposed skin.','Your vision narrows. You collapse.'],
+ Venus:['The air is 464 °C: exposed skin burns instantly.','Pressure 92 times Earth’s crushes your chest.','You cannot breathe carbon dioxide and acid vapour.'],
+ Mars:['Pressure is only 0.6% of Earth’s: fluids in your body start to boil.','The air is almost all CO₂: no oxygen reaches your blood.','Cold of about −65 °C sets in and your vision narrows.','You lose consciousness.'],
+ def:['Hydrogen and helium cannot be breathed: no oxygen reaches your blood.','Violent winds throw you around.','Extreme pressure and cold overwhelm your body.']};
+ function aInit(){if(AC)return;try{AC=new (window.AudioContext||window.webkitAudioContext)();const n=AC.createBuffer(1,AC.sampleRate*2,AC.sampleRate),d=n.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){l=l*.97+(Math.random()*2-1)*.03;d[i]=l*6}
+  const src=AC.createBufferSource();src.buffer=n;src.loop=true;wf=AC.createBiquadFilter();wf.type='lowpass';wf.frequency.value=500;wg=AC.createGain();wg.gain.value=0;src.connect(wf);wf.connect(wg);wg.connect(AC.destination);src.start();
+  const o=AC.createOscillator();o.frequency.value=48;dg=AC.createGain();dg.gain.value=0;o.connect(dg);dg.connect(AC.destination);o.start();
+  const h=AC.createOscillator();h.type='triangle';h.frequency.value=118;hg=AC.createGain();hg.gain.value=0;h.connect(hg);hg.connect(AC.destination);h.start()}catch(e){AC=null}}
+ function aWorld(p){if(!AC)return;const a=AUD[p.n]||[.2,0],t=AC.currentTime,on=p.tt!==null&&suit;
+  wg.gain.setTargetAtTime(mute?0:(on?a[0]*.25:(p.n=='Mercury'?0:a[0])),t,.4);wf.frequency.setTargetAtTime(p.n=='Mars'?380:p.env.deck?900:600,t,.3);dg.gain.setTargetAtTime(mute?0:(a[1]?.08:0),t,.5);hg.gain.setTargetAtTime(mute||!on?0:.02,t,.3)}
+ function aOff(){if(!AC)return;const t=AC.currentTime;[wg,dg,hg].forEach(g=>g.gain.setTargetAtTime(0,t,.2))}
+ function thump(v){if(!AC||mute)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.frequency.setValueAtTime(70,t);o.frequency.exponentialRampToValueAtTime(35,t+.2);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+.25);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.3)}
+ function thunder(){if(!AC||mute||st.mode!='surf')return;const t=AC.currentTime;wg.gain.cancelScheduledValues(t);wg.gain.setValueAtTime(.7,t);wf.frequency.setValueAtTime(160,t);wg.gain.exponentialRampToValueAtTime(.2,t+2.5)}
+ addEventListener('pointerdown',aInit,{once:true});addEventListener('keydown',aInit,{once:true});
+ $('snd').onclick=e=>{mute=!mute;e.target.textContent=mute?'Sound off':'Sound on';if(st.mode=='surf')aWorld(P[st.sel]);else aOff()};
  const clk=new THREE.Clock(),v3=new THREE.Vector3();
  function loop(){requestAnimationFrame(loop);const dt=Math.min(clk.getDelta(),.05),T=clk.elapsedTime;
   if(st.mode!='surf'){
-   P.forEach(p=>{if(!pause&&!rm)p.a0+=p.s*dt*.1;p.m.position.set(Math.cos(p.a0)*p.d,0,Math.sin(p.a0)*p.d);p.m.rotation.y+=dt*.25});sun.rotation.y+=dt*.04;
+   P.forEach(p=>{if(!pause&&!rm)p.a0+=p.s*dt*.1;p.m.position.set(Math.cos(p.a0)*p.d,0,Math.sin(p.a0)*p.d);p.m.rotation.y+=dt*.25});sun.rotation.y+=dt*.04;moon.position.set(P[2].m.position.x+Math.cos(T*.6)*3.4,0,P[2].m.position.z+Math.sin(T*.6)*3.4);
    if(st.mode=='focus')st.gt.copy(P[st.sel].m.position);
    const k=1-Math.pow(.003,dt);st.th+=(st.gth-st.th)*k;st.ph+=(st.gph-st.ph)*k;st.r+=(st.gr-st.r)*k;st.tgt.lerp(st.gt,k);if(st.mode=='sys'&&!drag&&!rm)st.gth+=dt*.015;
    cam.position.set(st.tgt.x+st.r*Math.sin(st.ph)*Math.cos(st.th),st.tgt.y+st.r*Math.cos(st.ph),st.tgt.z+st.r*Math.sin(st.ph)*Math.sin(st.th));cam.lookAt(st.tgt);
@@ -266,15 +314,15 @@ function initApp() {
    dome.position.copy(cam.position);if(mt)mt.position.set(pl.x,0,pl.z);if(cl)cl.position.copy(cam.position);stars.position.copy(cam.position);sunSpr.position.set(cam.position.x-500,cam.position.y+260,cam.position.z-800);
    if(dust){const w=env.wind||[1.5,0,.5];for(let i=0;i<dpos.length;i+=3){dpos[i]+=w[0]*dt;dpos[i+2]+=w[2]*dt;dpos[i+1]+=Math.sin(T+i)*.02;for(let a=0;a<3;a+=3){}
      const ax=[cam.position.x,cam.position.y,cam.position.z];for(let a=0;a<3;a++){const d=dpos[i+a]-ax[a];if(d>40)dpos[i+a]-=80;else if(d<-40)dpos[i+a]+=80}}dust.geometry.attributes.position.needsUpdate=true}
-   if(env.flash){const f=Math.random()<.004?1:0;if(f)hemi.intensity=3.2;else hemi.intensity+=((env.sun>1?.12:.55)-hemi.intensity)*.15}
-   if(p.tt!==null&&!suit&&!dead){left-=dt;const r=Math.max(0,left/p.tt),vb=$('vb');if(vb)vb.style.width=(r*100)+'%';vig.style.opacity=Math.pow(1-r,1.6);
-    if(left<=0){dead=true;$('dm').textContent=p.v;$('dead').style.display='flex'}}
+   if(env.flash){const f=Math.random()<.004?1:0;if(f){hemi.intensity=3.2;setTimeout(thunder,500+Math.random()*1500)}else hemi.intensity+=((env.sun>1?.12:.55)-hemi.intensity)*.15}
+   if(p.tt!==null&&!suit&&!dead){left-=dt;const r=Math.max(0,left/p.tt),vb=$('vb');if(vb)vb.style.width=(r*100)+'%';vig.style.opacity=Math.pow(1-r,1.6);const L=SYM[p.n]||SYM.def,k=Math.min(L.length,Math.floor((1-r)*L.length)+1);if(k!=symK){symK=k;$('sym').innerHTML=L.slice(0,k).map(x=>'<div>'+x+'</div>').join('')}cv.style.filter='blur('+((1-r)*5).toFixed(1)+'px)';hb-=dt;if(hb<=0){thump(.5);setTimeout(()=>thump(.3),180);hb=.45+r*.7}
+    if(left<=0){dead=true;thump(.8);aOff();$('dm').textContent=p.v;$('dead').style.display='flex'}}
    else{const vb=$('vb');if(vb&&suit)vb.style.width='100%'}}
   R.render(scene,cam)}
  $('help').onclick=()=>$('intro').style.display='flex';$('startb').onclick=()=>$('intro').style.display='none';
  loop();
 }
 
-// Boot up the app by fetching data first
+// Boot up the app (fetches database, then starts 3D engine)
 loadPlanetData();
 </script></body></html>
